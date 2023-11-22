@@ -9,6 +9,7 @@ right = 0
 space = 0
 fondx = 0
 
+
 xblocs = 0
 yblocs = 0
 
@@ -26,7 +27,7 @@ background.fill(NOIR)
 fond = pygame.image.load("fond.png").convert_alpha()
 
 
-def afich_map(av):
+def afich_map(av,a):
     
     global yblocs
     global xblocs
@@ -40,8 +41,9 @@ def afich_map(av):
 
 
     for l in range(14):
-        for c in range(30):
-            lines[l*31+c] = lignes[l][c+av]
+        for c in range(31):
+            lines[l*32+c] = lignes[l][c+round(av)]
+            print(round(av))
 
     XX = 0
     YY = 0
@@ -49,16 +51,18 @@ def afich_map(av):
     #print("main",LISTE_MURS)
     LISTE_GLOBALE_SPRITES.empty()
     for l in range(14):
-        for s in range(30):
-            if lines[l*31+s]=="M" or lines[l*31+s]=="C":
-                _mur = MUR(XX, YY, lines[l*31+s])
+        for s in range(31):
+            if lines[l*32+s]=="M" or lines[l*32+s]=="C":
+                _mur = MUR(XX+a, YY, lines[l*32+s])
                 LISTE_MURS.add(_mur)
                 LISTE_GLOBALE_SPRITES.add(_mur)
-            if lines[l*31+s]=="S":
-                _sol = SOL(XX, YY)
+            if lines[l*32+s]=="S":
+                _sol = SOL(XX+a, YY)
                 LISTE_SOLS.add(_sol)
                 LISTE_GLOBALE_SPRITES.add(_sol)
             XX = XX + 1
+        #print(a)
+
         XX = 0
         YY = YY + 1
 
@@ -111,7 +115,9 @@ while continuer:
     ecran.blit(fond,(fondx,0))
     LISTE_MURS.empty()
     LISTE_SOLS.empty()
-    afich_map(personnag.rect.x)
+    #personnag.avancer(right, left,space, ecran)
+    #print("bc",personnag.a)
+    afich_map(personnag.rect.x,personnag.a)
     LISTE_MURS.update()
     LISTE_SOLS.update()
     personnag.avancer(right, left,space, ecran)

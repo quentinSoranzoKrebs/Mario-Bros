@@ -62,13 +62,14 @@ class perso(pygame.sprite.Sprite):
         self.current_frame = 0
 
         self.rect = self.frames[self.current_frame].get_rect()
-        self.rect.x = 5
+        self.rect.x = 20
         self.rect.y = 0
         self.orientation = "-"
         self.orientation_up_down = "up"
 
         self.ldirect=True
         self.rdirect=True
+        self.a = 0
         
         print("self.rect: ",self.rect)
 
@@ -78,22 +79,31 @@ class perso(pygame.sprite.Sprite):
         self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
         if space==1 and self.rect.y>350:
             self.rect.y = self.rect.y - 100
-            ecran.blit(self.img_stabler,(5,self.rect.y))
-        if right==1 and self.rdirect:
+            ecran.blit(self.img_stabler,(500,self.rect.y))
+        if right==1 and self.rdirect:           
+            if self.a==0:
+                self.a=-0.5
+            elif self.a==-0.5:
+                self.a=0
             self.orientation = "r"
-            self.rect.x = self.rect.x + 1
+            self.rect.x += 1
             self.current_frame = (self.current_frame + 1) % len(self.frames)
-            ecran.blit(self.frames[self.current_frame], (5, self.rect.y))
+            ecran.blit(self.frames[self.current_frame], (500, self.rect.y))
         elif left==1 and self.rect.x>0 and self.ldirect:
+            if self.a==0:
+                self.a=0.5
+            elif self.a==0.5:
+                self.a=0
             self.orientation = "l"
-            self.rect.x = self.rect.x - 1
+            self.rect.x -= 1
             self.current_frame = (self.current_frame + 1) % len(self.frames)
-            ecran.blit(self.symmetrical_frame, (5, self.rect.y))
+            ecran.blit(self.symmetrical_frame, (500, self.rect.y))
         else:
             if self.orientation=="r":
-                ecran.blit(self.img_stabler,(5,self.rect.y))
+                ecran.blit(self.img_stabler,(500,self.rect.y))
             else:
-                ecran.blit(self.img_stablel,(5,self.rect.y))
+                ecran.blit(self.img_stablel,(500,self.rect.y))
+
 
         
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
