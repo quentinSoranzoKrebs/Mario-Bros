@@ -18,6 +18,7 @@ colision_xperso = True
 
 ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
+pygame.display.set_caption("Mario Bros","Mario Bros")
 
 background = pygame.Surface(ecran.get_size())
 background.fill(NOIR)
@@ -31,39 +32,43 @@ def afich_map(av,a):
     
     global yblocs
     global xblocs
-    lines = [0]*461
 
 
     # Ouvrir le fichier en mode lecture
     with open('map1.pg', 'r') as fichier:
         # Lire toutes les lignes du fichier dans une liste
         lignes = fichier.readlines()
+        fichier.seek(0)
+        lines = fichier.read()
 
 
-    for l in range(14):
-        for c in range(31):
-            lines[l*32+c] = lignes[l][c+round(av)]
-            print(round(av))
 
-    XX = 0
+
+    XX = -av
     YY = 0
+    global nb
+    nb = 0
     LISTE_MURS.empty()
     #print("main",LISTE_MURS)
     LISTE_GLOBALE_SPRITES.empty()
-    for l in range(14):
-        for s in range(31):
-            if lines[l*32+s]=="M" or lines[l*32+s]=="C":
-                _mur = MUR(XX+a, YY, lines[l*32+s])
+    for l in range(len(lignes)):
+        #print(len(lignes[l]))
+        
+        for s in range(len(lignes[l])):
+            if lines[XX]=="M" or lines[nb]=="C"  or lines[nb]=="B":
+                if lines[XX]=="B":
+                    _mur = MUR(XX, YY, lines[nb],"S")
+                else:
+                    _mur = MUR(XX, YY, lines[nb],"B")
                 LISTE_MURS.add(_mur)
                 LISTE_GLOBALE_SPRITES.add(_mur)
-            if lines[l*32+s]=="S":
-                _sol = SOL(XX+a, YY)
+            if lines[nb]=="S":
+                _sol = SOL(XX, YY)
                 LISTE_SOLS.add(_sol)
                 LISTE_GLOBALE_SPRITES.add(_sol)
             XX = XX + 1
-        #print(a)
-
-        XX = 0
+            nb+=1
+        XX = -av
         YY = YY + 1
 
 
@@ -117,7 +122,7 @@ while continuer:
     LISTE_SOLS.empty()
     #personnag.avancer(right, left,space, ecran)
     #print("bc",personnag.a)
-    afich_map(personnag.rect.x,personnag.a)
+    afich_map(personnag.rect.x-9,personnag.a)
     LISTE_MURS.update()
     LISTE_SOLS.update()
     personnag.avancer(right, left,space, ecran)
