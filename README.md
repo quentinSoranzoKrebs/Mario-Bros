@@ -1,17 +1,18 @@
-## Instructions d'installation
+# Installation Instructions
 
-Pour exécuter ce projet, suivez ces étapes :
+To run this project, follow these steps:
 
-1. Clonez le dépôt GitHub.
-2. Créez un environnement virtuel et installer les bibliothèques.
+1. Clone the GitHub repository.
+2. Create a virtual environment and install the libraries.
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # ou "venv\Scripts\activate" sur Windows
 pip3 install -r requirements.txt
 ```
-3. Executer le programe.
+3. Run the program.
 
 ```bash
 python3 main.py
+```
 
