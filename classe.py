@@ -63,7 +63,7 @@ class perso(pygame.sprite.Sprite):
         self.current_frame = 0
 
         self.rect = self.frames[self.current_frame].get_rect()
-        self.rect.x = 50
+        self.rect.x = 5
         self.rect.y = 0
         self.orientation = "-"
         self.orientation_up_down = "up"
