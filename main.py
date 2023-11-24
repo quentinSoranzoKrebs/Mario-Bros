@@ -1,5 +1,5 @@
 import pygame
-import imageio
+#import imageio
 from gif import *
 from classe import *
 pygame.init()
