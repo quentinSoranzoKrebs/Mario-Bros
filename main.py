@@ -4,6 +4,7 @@ from gif import *
 from classe import *
 from time import sleep
 
+
 pygame.init()
 
 info = pygame.display.Info()
