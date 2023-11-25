@@ -44,7 +44,7 @@ def afich_map(av,a):
 
 
 
-    XX = -av
+    XX = 0
     YY = 0
     global nb
     nb = 0
@@ -55,20 +55,20 @@ def afich_map(av,a):
         #print(len(lignes[l]))
         
         for s in range(len(lignes[l])):
-            if lines[XX]=="M" or lines[nb]=="C"  or lines[nb]=="B":
-                if lines[XX]=="B":
-                    _mur = MUR(XX, YY, lines[nb],"S")
+            if lines[nb]=="M" or lines[nb]=="C"  or lines[nb]=="B":
+                if lines[XX]=="B" or lines[XX]=="C":
+                    _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"S")
                 else:
-                    _mur = MUR(XX, YY, lines[nb],"B")
+                    _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"B")
                 LISTE_MURS.add(_mur)
                 LISTE_GLOBALE_SPRITES.add(_mur)
             if lines[nb]=="S":
-                _sol = SOL(XX, YY)
+                _sol = SOL(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
                 LISTE_SOLS.add(_sol)
                 LISTE_GLOBALE_SPRITES.add(_sol)
             XX = XX + 1
             nb+=1
-        XX = -av
+        XX = 0
         YY = YY + 1
 
 
@@ -122,7 +122,7 @@ while continuer:
     LISTE_SOLS.empty()
     #personnag.avancer(right, left,space, ecran)
     #print("bc",personnag.a)
-    afich_map(personnag.rect.x-9,personnag.a)
+    afich_map(personnag.av,personnag.a)
     LISTE_MURS.update()
     LISTE_SOLS.update()
     personnag.avancer(right, left,space, ecran)

@@ -8,6 +8,7 @@ LISTE_OBJETS = pygame.sprite.Group()
 LISTE_MURS = pygame.sprite.Group()
 LISTE_SOLS = pygame.sprite.Group()
 LISTE_GLOBALE_SPRITES = pygame.sprite.Group()
+murpos = []
 
 class MUR(pygame.sprite.Sprite):
     def __init__(self, x, y, b, e):
@@ -17,17 +18,20 @@ class MUR(pygame.sprite.Sprite):
         if b=="C":
             self.image = pygame.image.load("C.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.y = TUILE_TAILLE * y 
-        self.rect.x = TUILE_TAILLE * x
+        self.rect.y = y
+        self.rect.x = x
         self.etat = e
+        global murpos
+        murpos.append(self.rect.x)
+        murpos.append(self.rect.y)
 
 class SOL(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("S.png").convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.y = TUILE_TAILLE * y 
-        self.rect.x = TUILE_TAILLE * x
+        self.rect.y = y 
+        self.rect.x = x
 
 
 
@@ -63,8 +67,9 @@ class perso(pygame.sprite.Sprite):
         self.current_frame = 0
 
         self.rect = self.frames[self.current_frame].get_rect()
-        self.rect.x = 5
+        self.rect.x = 500
         self.rect.y = 0
+        self.av = 0
         self.orientation = "-"
         self.orientation_up_down = "up"
 
@@ -80,41 +85,49 @@ class perso(pygame.sprite.Sprite):
         self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
         if space==1 and self.rect.y>350:
             self.rect.y = self.rect.y - 100
-            ecran.blit(self.img_stabler,(5,self.rect.y))
-        if right==1 and self.rdirect:           
-            if self.a==0:
-                self.a=-0.5
-            elif self.a==-0.5:
-                self.a=0
-            self.orientation = "r"
-            self.rect.x += 0.5
-            self.current_frame = (self.current_frame + 1) % len(self.frames)
-            ecran.blit(self.frames[self.current_frame], (5, self.rect.y))
-        elif left==1 and self.rect.x>0 and self.ldirect:
-            if self.a==0:
-                self.a=0.5
-            elif self.a==0.5:
-                self.a=0
-            self.orientation = "l"
-            self.rect.x -= 0.5
-            self.current_frame = (self.current_frame + 1) % len(self.frames)
-            ecran.blit(self.symmetrical_frame, (5, self.rect.y))
+            ecran.blit(self.img_stabler,(self.rect.x,self.rect.y))
+        if right==1 and self.rdirect:
+            if self.rect.x>500:
+                self.orientation = "r"
+                self.av += 10
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
+            else:
+                self.orientation = "r"
+                self.rect.x += 10
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
+            print(self.av)
+        elif left==1 and self.av>-500 and self.ldirect:
+            if self.av>0:
+                self.orientation = "l"
+                self.av -= 10
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
+            else:
+                self.orientation = "l"
+                self.rect.x -= 10
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
+
         else:
             if self.orientation=="r":
-                ecran.blit(self.img_stabler,(5,self.rect.y))
+                ecran.blit(self.img_stabler,(self.rect.x,self.rect.y))
             else:
-                ecran.blit(self.img_stablel,(5,self.rect.y))
+                ecran.blit(self.img_stablel,(self.rect.x,self.rect.y))
 
 
         
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
-        if self.orientation_up_down == "up":
-            if len(LISTE_COLLISION_MUR) > 0:
-                self.rect.y=self.rect.y-20
+        #if self.orientation_up_down == "up":
+        global murpos
+        if len(LISTE_COLLISION_MUR) > 0:
+            self.rect.y=self.rect.y-20
+        #print("x:",self.rect.x,"      colision",LISTE_COLLISION_MUR,"    Liste mur",murpos)
 
-        elif self.orientation_up_down == "down":
+        '''elif self.orientation_up_down == "down":
             if len(LISTE_COLLISION_MUR) > 0 and self.orientation=="r":
-                self.rdirect=False
+           rect.x-9     self.rdirect=False
             else:
                 self.rdirect=True
             
@@ -122,6 +135,7 @@ class perso(pygame.sprite.Sprite):
                 self.ldirect=False
             else:
                 self.ldirect=True
+            print(self.rect.x)'''
 
         LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
         if len(LISTE_COLLISION_SOL) > 0:
