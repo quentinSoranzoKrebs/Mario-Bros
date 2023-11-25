@@ -64,7 +64,7 @@ class perso(pygame.sprite.Sprite):
         self.frame_rate = 15
         self.current_frame = 0
 
-        self.rect = self.frames[self.current_frame].get_rect()
+        self.rect = self.img_stabler.get_rect()
         self.rect.x = 500
         self.rect.y = 0
         self.av = 0
@@ -80,9 +80,10 @@ class perso(pygame.sprite.Sprite):
     def avancer(self, right, left, space, ecran):
         X_COURANT = self.rect.x
         Y_COURANT = self.rect.y
+        AV_COURANT = self.av
         self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
         if space==1 and self.rect.y>350:
-            self.rect.y = self.rect.y - 100
+            self.rect.y = self.rect.y - 40
             ecran.blit(self.img_stabler,(self.rect.x,self.rect.y))
         if right==1 and self.rdirect:
             if self.rect.x>500:
@@ -118,10 +119,28 @@ class perso(pygame.sprite.Sprite):
         
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
         #if self.orientation_up_down == "up":
-        global murpos
-        if len(LISTE_COLLISION_MUR) > 0:
-            self.rect.y=self.rect.y-20
-        #print("x:",self.rect.x,"      colision",LISTE_COLLISION_MUR,"    Liste mur",murpos)
+        '''if len(LISTE_COLLISION_MUR) > 0:
+            self.rect.y=self.rect.y-20            
+            if position_y<self.rect.x:
+                self.rect.y=self.rect.y-20'''
+
+        for bloc in LISTE_COLLISION_MUR:
+            position_x = bloc.rect.x
+            position_y = bloc.rect.y
+            if position_y>self.rect.y+80:
+                self.rect.y=position_y-115
+            if position_y<self.rect.y:
+                print("haut")
+                self.rect.y=position_y+TUILE_TAILLE+10
+            if position_x<self.rect.y+50 and not position_y<self.rect.y and not position_y>self.rect.y+80:
+                self.av = AV_COURANT + 1
+
+            if position_x>self.rect.y and not position_y<self.rect.y and not position_y>self.rect.y+80:
+                self.av = AV_COURANT-1
+
+
+            
+            print(f"Bloc en collision - Position x : {position_x}, Position y : {position_y}")
 
         '''elif self.orientation_up_down == "down":
             if len(LISTE_COLLISION_MUR) > 0 and self.orientation=="r":
