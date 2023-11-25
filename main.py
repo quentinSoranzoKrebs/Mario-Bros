@@ -22,7 +22,7 @@ with open('version.txt', 'r') as fichier:
 version = "version: "+str(v)
 Text = POLICE_ARIAL.render(version,1,BLANC)
 text_rect = Text.get_rect()
-print(text_rect[3],text_rect)
+#print(text_rect[3],text_rect)
 loading.blit(Text,(w/2-text_rect[2]/2,h/2-text_rect[3]/2))
 
 pygame.display.flip()
@@ -30,6 +30,8 @@ pygame.display.flip()
 sleep(4)
 
 pygame.quit()
+
+
 
 
 left = 0
@@ -81,20 +83,20 @@ def afich_map(av,a):
     #print("main",LISTE_MURS)
     LISTE_GLOBALE_SPRITES.empty()
     for l in range(len(lignes)):
-        #print(len(lignes[l]))
-        
         for s in range(len(lignes[l])):
-            if lines[nb]=="M" or lines[nb]=="C"  or lines[nb]=="B":
-                if lines[XX]=="B" or lines[XX]=="C":
-                    _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"S")
-                else:
-                    _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"B")
-                LISTE_MURS.add(_mur)
-                LISTE_GLOBALE_SPRITES.add(_mur)
-            if lines[nb]=="S":
-                _sol = SOL(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
-                LISTE_SOLS.add(_sol)
-                LISTE_GLOBALE_SPRITES.add(_sol)
+            w,h = pygame.display.get_surface().get_size()
+            if XX*TUILE_TAILLE-av<w:
+                if lines[nb]=="M" or lines[nb]=="C"  or lines[nb]=="B":
+                    if lines[XX]=="B" or lines[XX]=="C":
+                        _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"S")
+                    else:
+                        _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"B")
+                    LISTE_MURS.add(_mur)
+                    LISTE_GLOBALE_SPRITES.add(_mur)
+                if lines[nb]=="S":
+                    _sol = SOL(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
+                    LISTE_SOLS.add(_sol)
+                    LISTE_GLOBALE_SPRITES.add(_sol)
             XX = XX + 1
             nb+=1
         XX = 0

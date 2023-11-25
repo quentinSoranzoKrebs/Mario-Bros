@@ -11,7 +11,7 @@ LISTE_GLOBALE_SPRITES = pygame.sprite.Group()
 murpos = []
 
 class MUR(pygame.sprite.Sprite):
-    def __init__(self, x, y, b, e):
+    def __init__(self, x, y, b, p):
         pygame.sprite.Sprite.__init__(self)
         if b=="M" or b=="B":
             self.image = pygame.image.load("M.png").convert_alpha()
@@ -20,10 +20,8 @@ class MUR(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
-        self.etat = e
-        global murpos
-        murpos.append(self.rect.x)
-        murpos.append(self.rect.y)
+        self.prop = p
+
 
 class SOL(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -77,7 +75,7 @@ class perso(pygame.sprite.Sprite):
         self.rdirect=True
         self.a = 0
         
-        print("self.rect: ",self.rect)
+        #print("self.rect: ",self.rect)
 
     def avancer(self, right, left, space, ecran):
         X_COURANT = self.rect.x
@@ -89,24 +87,24 @@ class perso(pygame.sprite.Sprite):
         if right==1 and self.rdirect:
             if self.rect.x>500:
                 self.orientation = "r"
-                self.av += 10
+                self.av += 20
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
             else:
                 self.orientation = "r"
-                self.rect.x += 10
+                self.rect.x += 20
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
             print(self.av)
         elif left==1 and self.av>-500 and self.ldirect:
             if self.av>0:
                 self.orientation = "l"
-                self.av -= 10
+                self.av -= 20
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
             else:
                 self.orientation = "l"
-                self.rect.x -= 10
+                self.rect.x -= 20
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
 
