@@ -2,7 +2,34 @@ import pygame
 import imageio
 from gif import *
 from classe import *
+from time import sleep
+
 pygame.init()
+
+info = pygame.display.Info()
+
+largeur_ecran = info.current_w
+hauteur_ecran = info.current_h
+
+loading = pygame.display.set_mode((largeur_ecran/2,hauteur_ecran/2),pygame.NOFRAME | pygame.SWSURFACE)
+w,h = pygame.display.get_surface().get_size()
+pygame.display.set_caption("Loading")
+
+POLICE_ARIAL = pygame.font.SysFont("Arial",35,1,1)
+with open('version.txt', 'r') as fichier:
+    v = fichier.readline()
+version = "version: "+str(v)
+Text = POLICE_ARIAL.render(version,1,BLANC)
+text_rect = Text.get_rect()
+print(text_rect[3],text_rect)
+loading.blit(Text,(w/2-text_rect[2]/2,h/2-text_rect[3]/2))
+
+pygame.display.flip()
+
+sleep(4)
+
+pygame.quit()
+
 
 left = 0
 right = 0
@@ -19,6 +46,7 @@ colision_xperso = True
 ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
+
 
 background = pygame.Surface(ecran.get_size())
 background.fill(NOIR)
