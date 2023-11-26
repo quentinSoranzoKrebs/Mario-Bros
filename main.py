@@ -11,7 +11,7 @@ info = pygame.display.Info()
 
 largeur_ecran = info.current_w
 hauteur_ecran = info.current_h
-
+'''
 loading = pygame.display.set_mode((largeur_ecran/2,hauteur_ecran/2),pygame.NOFRAME | pygame.SWSURFACE)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Loading")
@@ -30,7 +30,7 @@ pygame.display.flip()
 sleep(4)
 
 pygame.quit()
-
+'''
 
 
 
@@ -86,11 +86,12 @@ def afich_map(av,a):
         for s in range(len(lignes[l])):
             w,h = pygame.display.get_surface().get_size()
             if XX*TUILE_TAILLE-av<w:
-                if lines[nb]=="M" or lines[nb]=="C"  or lines[nb]=="B":
-                    if lines[XX]=="B" or lines[XX]=="C":
-                        _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"S")
-                    else:
-                        _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE, lines[nb],"B")
+                if lines[nb]=="C":
+                    _box = BOX(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
+                    LISTE_BOX.add(_box)
+                    LISTE_GLOBALE_SPRITES.add(_box)
+                if lines[nb]=="M":
+                    _mur = MUR(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
                     LISTE_MURS.add(_mur)
                     LISTE_GLOBALE_SPRITES.add(_mur)
                 if lines[nb]=="S":
@@ -106,7 +107,8 @@ def afich_map(av,a):
 
 personnag = perso()
 
-
+_cad=CAD(w/2,h/2)
+LISTE_GLOBALE_SPRITES.add(_cad)
 
 continuer=True
 
