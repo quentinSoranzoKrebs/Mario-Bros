@@ -11,6 +11,8 @@ LISTE_GLOBALE_SPRITES = pygame.sprite.Group()
 LISTE_BOX = pygame.sprite.Group()
 CADEAUX = pygame.sprite.Group()
 LISTE_GOOMBA = pygame.sprite.Group()
+liste_goomba = []
+
 
 class MUR(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -80,6 +82,7 @@ class goomba(pygame.sprite.Sprite):
     def update(self,ecran):
         self.current_frame = (self.current_frame + 1) % len(self.frames)
         ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
+        self.rect.x -= 5
 
 
 class perso(pygame.sprite.Sprite):

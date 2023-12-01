@@ -85,6 +85,7 @@ def afich_map(av,a):
     global nb
     nb = 0
     LISTE_MURS.empty()
+    LISTE_GOOMBA.empty()
     #print("main",LISTE_MURS)
     LISTE_GLOBALE_SPRITES.empty()
     for l in range(len(lignes)):
@@ -103,37 +104,9 @@ def afich_map(av,a):
                     _sol = SOL(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
                     LISTE_SOLS.add(_sol)
                     LISTE_GLOBALE_SPRITES.add(_sol)
-            XX = XX + 1
-            nb+=1
-        XX = 0
-        YY = YY + 1
-
-
-def place_monstre(av):
-
-    # Ouvrir le fichier en mode lecture
-    with open('map1.pg', 'r') as fichier:
-        # Lire toutes les lignes du fichier dans une liste
-        lignes = fichier.readlines()
-        fichier.seek(0)
-        lines = fichier.read()
-
-    XX = 0
-    YY = 0
-    global nb
-    nb = 0
-    LISTE_MURS.empty()
-    #print("main",LISTE_MURS)
-    LISTE_GLOBALE_SPRITES.empty()
-    for l in range(len(lignes)):
-        for s in range(len(lignes[l])):
-            w,h = pygame.display.get_surface().get_size()
-            if XX*TUILE_TAILLE-av<w:
                 if lines[nb]=="G":
                     _gomb = goomba(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
-                    LISTE_BOX.add(_box)
-                    LISTE_GLOBALE_SPRITES.add(_gomb)
-
+                    LISTE_GOOMBA.add(_gomb)
             XX = XX + 1
             nb+=1
         XX = 0
@@ -141,7 +114,7 @@ def place_monstre(av):
 
 
 personnag = perso()
-goomb = goomba(0,0)
+goomb = goomba(500,0)
 
 _cad=CAD(w/2,h/2)
 LISTE_GLOBALE_SPRITES.add(_cad)
@@ -151,6 +124,7 @@ LISTE_GLOBALE_SPRITES.add(_cad)
 continuer=True
 
 while continuer:
+    
     w,h = pygame.display.get_surface().get_size()
     #print(personnag.rect.y)
 
@@ -213,14 +187,15 @@ while continuer:
     #personnag.avancer(right, left,space, ecran)
     #print("bc",personnag.a)
     afich_map(personnag.av,personnag.a)
-    place_monstre(personnag.av)
     LISTE_MURS.update()
     LISTE_SOLS.update()
     personnag.avancer(right, left,space, ecran)
     goomb.update(ecran)
+    LISTE_GOOMBA.draw(ecran)
+    for i in LISTE_GOOMBA:
+        i.update(ecran)
 
     LISTE_GLOBALE_SPRITES.draw(ecran)
-
 
 
     #print(personnag.xperso)
