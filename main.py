@@ -195,6 +195,7 @@ while continuer:
     for i in LISTE_GOOMBA:
         i.update(ecran)
 
+
     LISTE_GLOBALE_SPRITES.draw(ecran)
 
 
