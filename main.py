@@ -39,6 +39,7 @@ right = 0
 space = 0
 fondx = 0
 
+marge = 0.1
 
 xblocs = 0
 yblocs = 0
@@ -50,6 +51,10 @@ ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
 
+nombre_manettes = pygame.joystick.get_count()
+for i in range(nombre_manettes):
+    manette = pygame.joystick.Joystick(i)
+    manette.init()
 
 background = pygame.Surface(ecran.get_size())
 background.fill(NOIR)
@@ -104,17 +109,49 @@ def afich_map(av,a):
         YY = YY + 1
 
 
+def place_monstre(av):
+
+    # Ouvrir le fichier en mode lecture
+    with open('map1.pg', 'r') as fichier:
+        # Lire toutes les lignes du fichier dans une liste
+        lignes = fichier.readlines()
+        fichier.seek(0)
+        lines = fichier.read()
+
+    XX = 0
+    YY = 0
+    global nb
+    nb = 0
+    LISTE_MURS.empty()
+    #print("main",LISTE_MURS)
+    LISTE_GLOBALE_SPRITES.empty()
+    for l in range(len(lignes)):
+        for s in range(len(lignes[l])):
+            w,h = pygame.display.get_surface().get_size()
+            if XX*TUILE_TAILLE-av<w:
+                if lines[nb]=="G":
+                    _gomb = goomba(XX*TUILE_TAILLE-av, YY*TUILE_TAILLE)
+                    LISTE_BOX.add(_box)
+                    LISTE_GLOBALE_SPRITES.add(_gomb)
+
+            XX = XX + 1
+            nb+=1
+        XX = 0
+        YY = YY + 1
+
 
 personnag = perso()
+goomb = goomba(0,0)
 
 _cad=CAD(w/2,h/2)
 LISTE_GLOBALE_SPRITES.add(_cad)
+
+
 
 continuer=True
 
 while continuer:
     w,h = pygame.display.get_surface().get_size()
-    
     #print(personnag.rect.y)
 
     #colision(xperso,yperso)
@@ -138,6 +175,26 @@ while continuer:
             if event.key == pygame.K_SPACE:
                 space=0
 
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 1:
+                space = 1
+
+        if event.type == pygame.JOYBUTTONUP:
+            if event.button == 1:
+                space = 0
+
+
+        if event.type == pygame.JOYAXISMOTION:
+            if event.axis == 0:
+
+                if event.value < -0.5:
+                    left = 1
+                elif event.value > 0.5:
+                    right = 1
+                elif -marge < event.value < marge:
+                    left = 0
+                    right = 0
+
 
     if left==1 and personnag.rect.x>0:
         fondx=fondx+10
@@ -156,9 +213,11 @@ while continuer:
     #personnag.avancer(right, left,space, ecran)
     #print("bc",personnag.a)
     afich_map(personnag.av,personnag.a)
+    place_monstre(personnag.av)
     LISTE_MURS.update()
     LISTE_SOLS.update()
     personnag.avancer(right, left,space, ecran)
+    goomb.update(ecran)
 
     LISTE_GLOBALE_SPRITES.draw(ecran)
 
