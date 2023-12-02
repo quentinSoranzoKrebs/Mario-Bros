@@ -11,7 +11,7 @@ LISTE_GLOBALE_SPRITES = pygame.sprite.Group()
 LISTE_BOX = pygame.sprite.Group()
 CADEAUX = pygame.sprite.Group()
 LISTE_GOOMBA = pygame.sprite.Group()
-liste_goomba = []
+LISTE_AFFICH = pygame.sprite.Group()
 
 
 class MUR(pygame.sprite.Sprite):
@@ -75,14 +75,50 @@ class goomba(pygame.sprite.Sprite):
         self.frame_rate = 15
         self.current_frame = 0
 
+        self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
         self.image = self.frames[self.current_frame]
-        self.rect = pygame.Rect(x, y, 550, 550)
+        self.rect = pygame.Rect(x, y, 70, 70)
         self.rect.y = y
         self.rect.x = x
+        self.direction = "right"
+        self.etat = 1
+
     def update(self,ecran):
-        self.current_frame = (self.current_frame + 1) % len(self.frames)
-        ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
-        self.rect.x -= 5
+        if self.etat > 0:
+            self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
+            if self.direction == "right":
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                self.image = self.frames[self.current_frame]
+                self.rect.x -= 5
+            elif self.direction == "left":
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                self.image = self.symmetrical_frame
+                self.rect.x +=5
+
+            LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
+            LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
+
+            for bloc in LISTE_COLLISION_SOL:
+                position_x = bloc.rect.x
+                position_y = bloc.rect.y
+                self.rect.y = position_y-67
+
+            for bloc in LISTE_COLLISION_MUR:
+                position_x = bloc.rect.x
+                position_y = bloc.rect.y
+                if position_x+TUILE_TAILLE < self.rect.x+69 and not position_y > self.rect.y + 40:
+                    self.direction = "left"
+
+                if position_x > self.rect.x and not position_y > self.rect.y + 40:
+                    self.direction = "right"
+
+                if position_y > self.rect.y + 40:
+                    self.rect.y = position_y-67
+
+            if not len(LISTE_COLLISION_SOL) > 0 and not len(LISTE_COLLISION_MUR) > 0:
+                self.rect.y +=20
+
+
 
 
 class perso(pygame.sprite.Sprite):
@@ -124,6 +160,7 @@ class perso(pygame.sprite.Sprite):
         self.chute_vitesse = 20
         self.saut_vitesse = 38
         self.av_vitesse = 5
+        self.etat = 4
 
         self.ldirect=True
         self.rdirect=True
@@ -131,17 +168,21 @@ class perso(pygame.sprite.Sprite):
         
         #print("self.rect: ",self.rect)
 
-    def avancer(self, right, left, space, ecran):
-        self.chute_vitesse +=0.4
-        if self.saut == 1:
-            self.saut_vitesse -=1
+    def avancer(self, right, left, space, ecran, time):
+        #self.chute_vitesse +=0.4
+        if time > 0 and self.saut == 0:
+            self.saut = 1
+            self.saut_vitesse = time/3
         X_COURANT = self.rect.x
         Y_COURANT = self.rect.y
         AV_COURANT = self.av
         self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
-        if space==1:
+
+        if self.saut == 1:
             self.rect.y -= self.saut_vitesse
-            self.saut = 1
+            self.saut_vitesse -=1
+
+
 
         if right==1 and self.rdirect:
             if self.rect.x>500:
@@ -157,12 +198,12 @@ class perso(pygame.sprite.Sprite):
         elif left==1 and self.av>-500 and self.ldirect:
             if self.av>0:
                 self.orientation = "l"
-                self.av -= 20
+                self.av -= 10
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
             else:
                 self.orientation = "l"
-                self.rect.x -= 20
+                self.rect.x -= 10
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
 
@@ -215,6 +256,18 @@ class perso(pygame.sprite.Sprite):
         if not len(LISTE_COLLISION_SOL) > 0 and not len(LISTE_COLLISION_MUR) > 0:
             self.rect.y=self.rect.y+self.chute_vitesse
 
+
+        LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, True)
+
+        for bloc in LISTE_COLLISION_MONSTRE:
+            position_x = bloc.rect.x
+            position_y = bloc.rect.y
+            if position_y > self.rect.y + 50:
+                bloc.etat = 0
+                self.saut = 1
+                self.saut_vitesse = 30
+            if bloc.etat > 0:
+                self.etat -= 1
 
 
 '''        LISTE_COLLISION_BOX = pygame.sprite.spritecollide(self, LISTE_BOX, False)
