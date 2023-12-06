@@ -104,12 +104,12 @@ def affich_map(av):
     LISTE_AFFICH.empty()
     for sprite in LISTE_GLOBALE_SPRITES:
         if left == 1:
-            sprite.rect.x += 10
+            sprite.rect.x += personnag.avance_gauche
         if right ==1:
-            sprite.rect.x -= 10
+            sprite.rect.x -= personnag.avance_droite
 
         
-        if sprite.rect.x < w and sprite.rect.x > -45:
+        if sprite.rect.x < w and sprite.rect.x > -45 and sprite.etat:
             LISTE_AFFICH.add(sprite)
 
 
@@ -188,7 +188,7 @@ while continuer:
     #print("bc",personnag.a)
     affich_map(personnag.av)
     LISTE_AFFICH.update(ecran)
-    if personnag.etat > 0:
+    if personnag.vie > 0:
         personnag.avancer(right, left,space, ecran, elapsed_time)
     elapsed_time = 0
     #LISTE_GOOMBA.draw(ecran)
@@ -196,7 +196,7 @@ while continuer:
 
     LISTE_AFFICH.draw(ecran)
 
-    if personnag.etat == 0:
+    if personnag.vie == 0:
         #del personnag
         POLICE_ARIAL = pygame.font.SysFont("Arial",100,1,1)
         gameover = POLICE_ARIAL.render("GAMEOVER",1,ROUGE)
