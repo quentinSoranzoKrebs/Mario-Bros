@@ -102,10 +102,14 @@ for l in range(len(lignes)):
 
 def affich_map(av):
     LISTE_AFFICH.empty()
+    if personnag.vie > 0:
+        LISTE_AFFICH.add(personnag)
     for sprite in LISTE_GLOBALE_SPRITES:
         if left == 1:
+            personnag.orientation = "l"
             sprite.rect.x += personnag.avance_gauche
         if right ==1:
+            personnag.orientation = "g"
             sprite.rect.x -= personnag.avance_droite
 
         
@@ -114,6 +118,7 @@ def affich_map(av):
 
 
 personnag = perso()
+LISTE_AFFICH.add(personnag)
 goomb = goomba(500,0)
 
 

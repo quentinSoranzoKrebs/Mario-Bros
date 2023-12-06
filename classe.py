@@ -140,14 +140,14 @@ class perso(pygame.sprite.Sprite):
 
         gif_path = 'mario2.gif'
 
-        self.image = imageio.get_reader(gif_path)
+        self.imge = imageio.get_reader(gif_path)
         self.img_stabler = pygame.image.load("stabler.png").convert_alpha()
         self.img_stablel = pygame.image.load("stablel.png").convert_alpha()
 
 
-        first_frame = self.image.get_data(0)
+        first_frame = self.imge.get_data(0)
 
-        self.frames = [pygame.surfarray.make_surface(frame.swapaxes(0, 1)) for frame in self.image]
+        self.frames = [pygame.surfarray.make_surface(frame.swapaxes(0, 1)) for frame in self.imge]
 
         first_frame_surface = pygame.surfarray.make_surface(first_frame.swapaxes(0, 1))
 
@@ -160,6 +160,7 @@ class perso(pygame.sprite.Sprite):
         self.frame_rate = 15
         self.current_frame = 0
 
+        self.image = self.img_stablel
         self.rect =  pygame.Rect(500, 0, 35, 74)
         self.rect.x = 500
         self.rect.y = 0
@@ -195,37 +196,29 @@ class perso(pygame.sprite.Sprite):
         if self.saut == 1:
             self.rect.y -= self.saut_vitesse
             self.saut_vitesse -=1
-
-
-
-        if right==1 and self.rdirect:
-            if self.rect.x>500:
-                self.orientation = "r"
-                self.current_frame = (self.current_frame + 1) % len(self.frames)
-                ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
+            self.current_frame = 1
+            if self.orientation == "l":
+                self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
+                self.image = self.symmetrical_frame
             else:
-                self.orientation = "r"
-                self.current_frame = (self.current_frame + 1) % len(self.frames)
-                ecran.blit(self.frames[self.current_frame], (self.rect.x, self.rect.y))
-        elif left==1 and self.av>-500 and self.ldirect:
-            if self.av>0:
-                self.orientation = "l"
-                self.current_frame = (self.current_frame + 1) % len(self.frames)
-                ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
-            else:
-                self.orientation = "l"
-                self.current_frame = (self.current_frame + 1) % len(self.frames)
-                ecran.blit(self.symmetrical_frame, (self.rect.x, self.rect.y))
+                self.image = self.frames[self.current_frame]
 
-        else:
-            if self.orientation=="r":
-                ecran.blit(self.img_stabler,(self.rect.x,self.rect.y))
-            else:
-                ecran.blit(self.img_stablel,(self.rect.x,self.rect.y))
 
-        if left == 1 or right == 1:
-            if self.av_vitesse < 10:
-                self.av_vitesse +=0.2
+        if self.saut == 0:
+            if self.orientation == "r":
+                self.image = self.img_stabler
+            elif self.orientation == "l":
+                self.image = self.img_stablel
+
+
+            if right==1 and self.rdirect:
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                self.image = self.frames[self.current_frame]
+            elif left==1 and self.ldirect:
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                self.image = self.symmetrical_frame
+            
+
 
         
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
@@ -247,9 +240,9 @@ class perso(pygame.sprite.Sprite):
                 self.saut_vitesse = 0
 
 
-            if position_x<self.rect.x:
+            if position_x<self.rect.x and not position_y>self.rect.y+74/2:
                 self.avance_gauche = 0
-            if position_x>self.rect.x:
+            if position_x>self.rect.x and not position_y>self.rect.y+74/2:
                 self.avance_droite = 0
             
 
