@@ -40,6 +40,7 @@ space = 0
 fondx = 0
 
 elapsed_time = 0
+start_time = 0
 
 marge = 0.1
 
@@ -67,7 +68,7 @@ fond = pygame.image.load("fond.png").convert_alpha()
 
 
 # Ouvrir le fichier en mode lecture
-with open('map1.pg', 'r') as fichier:
+with open('map2.pg', 'r') as fichier:
     # Lire toutes les lignes du fichier dans une liste
     lignes = fichier.readlines()
     fichier.seek(0)
@@ -86,8 +87,8 @@ for l in range(len(lignes)):
             _mur = MUR(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
             LISTE_MURS.add(_mur)
             LISTE_GLOBALE_SPRITES.add(_mur)
-        if lines[nb]=="S":
-            _sol = SOL(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
+        if lines[nb]=="S" or lines[nb]== "s" or lines[nb]== "T":
+            _sol = SOL(XX*TUILE_TAILLE, YY*TUILE_TAILLE,lines[nb])
             LISTE_SOLS.add(_sol)
             LISTE_GLOBALE_SPRITES.add(_sol)
         if lines[nb]=="G":
@@ -107,14 +108,15 @@ def affich_map(av):
     for sprite in LISTE_GLOBALE_SPRITES:
         if left == 1:
             personnag.orientation = "l"
-            sprite.rect.x += personnag.avance_gauche
+            sprite.rect.x += personnag.avance_gauche*1.4
         if right ==1:
-            personnag.orientation = "g"
-            sprite.rect.x -= personnag.avance_droite
+            personnag.orientation = "r"
+            sprite.rect.x -= personnag.avance_droite*1.4
 
         
         if sprite.rect.x < w and sprite.rect.x > -45 and sprite.etat:
             LISTE_AFFICH.add(sprite)
+
 
 
 personnag = perso()
@@ -153,9 +155,12 @@ while continuer:
             if event.key == pygame.K_SPACE:
                 space=0
                 elapsed_time = pygame.time.get_ticks() - start_time
-                if elapsed_time > 110:
-                    elapsed_time = 110
+                if elapsed_time > 150:
+                    elapsed_time = 150
 
+
+
+        print(elapsed_time)
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 1:
                 space = 1
@@ -177,13 +182,16 @@ while continuer:
                     right = 0
 
 
-    if left==1 and personnag.rect.x>0:
-        fondx=fondx+10
-    elif right==1:
-        fondx=fondx-10
+    if left==1 and personnag.rect.x>0 and personnag.avance_gauche>0:
+        fondx=fondx+1
+    elif right==1 and personnag.avance_droite>0:
+        fondx=fondx-1
     if fondx>0:
         fondx=0
 
+    if pygame.time.get_ticks() - start_time > 180 and space == 1:
+        space = 0
+        elapsed_time = 170
 
     symmetrical_frame = pygame.transform.flip(frames[current_frame], True, False)
 
@@ -200,6 +208,7 @@ while continuer:
 
 
     LISTE_AFFICH.draw(ecran)
+    CADEAUX.draw(ecran)
 
     if personnag.vie == 0:
         #del personnag
