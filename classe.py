@@ -14,8 +14,13 @@ LISTE_BOX = pygame.sprite.Group()
 CADEAUX = pygame.sprite.Group()
 LISTE_GOOMBA = pygame.sprite.Group()
 LISTE_AFFICH = pygame.sprite.Group()
+LISTE_point = pygame.sprite.Group()
+liste_point = pygame.sprite.Group()
+lp = ()
+ma_liste = []
 s = 1
 rand = randint(0,5)
+pente = 0
 
 
 class MUR(pygame.sprite.Sprite):
@@ -28,6 +33,7 @@ class MUR(pygame.sprite.Sprite):
         self.origine_y = y
         self.origine_x = x
         self.etat = True
+        self.vie = 1
     def update(self,ecran):
         self.rect.y = self.origine_y
         
@@ -38,14 +44,14 @@ class SOL(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         global s
         global randint
-        if B=="S":
+        if B=="-":
             sol = "S"+str(s)+".png"
             self.image = pygame.image.load(sol).convert_alpha()
             s += 1
             if s == 7:
                 s = 1
             rand = randint(0,5)
-            print(rand)
+            #print(rand)
             if s >= 5 and randint(1,5) == 1:
                 s = 5
         if B=="s":
@@ -56,6 +62,28 @@ class SOL(pygame.sprite.Sprite):
         self.rect.y = y 
         self.rect.x = x
         self.etat = True
+        self.vie = 1
+
+class SOL_POINT(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load("C.png").convert_alpha()
+        self.rect = self.image.get_rect(center=(self.image.get_width() // 2, self.image.get_height() // 2))
+        self.rect.y = y
+        self.rect.x = x
+        self.vie = 0
+        self.etat = True
+    def update(self,ecran):
+        for i in range(len(LISTE_point)):
+            if i+1!=1:
+                premier_sprite = LISTE_point.sprites()[i-1]
+                position1_x = premier_sprite.rect.x
+                position1_y = premier_sprite.rect.y
+                deuxième_sprite = LISTE_point.sprites()[i]
+                position2_x = deuxième_sprite.rect.x
+                position2_y = deuxième_sprite.rect.y
+                pygame.draw.line(ecran, NOIR, (position1_x,position1_y), (position2_x,position2_y), 2)
+
 
 
 class BOX(pygame.sprite.Sprite):
@@ -77,6 +105,7 @@ class TUI(pygame.sprite.Sprite):
         self.rect.y = y
         self.rect.x = x
         self.etat = True
+        self.vie = 1
 
 
 class CAD(pygame.sprite.Sprite):
@@ -90,6 +119,7 @@ class CAD(pygame.sprite.Sprite):
         self.rect.x = x
         self.etat = True
         self.direction = "right"
+        self.vie = 1
 
     def update(self,ecran):
         if self.etat:
@@ -242,10 +272,12 @@ class perso(pygame.sprite.Sprite):
         self.etat = True
         self.avance_droite = 10
         self.avance_gauche = 10
+        self.sol = False
         
         #print("self.rect: ",self.rect)
 
-    def avancer(self, right, left, space, ecran, time):
+    def avancer(self, right, left, space, ecran, time, lp):
+        global pente
         #self.chute_vitesse +=0.4
         if time > 0 and self.saut == 0 and space == 0:
             self.saut = 1
@@ -309,6 +341,8 @@ class perso(pygame.sprite.Sprite):
             
 
 
+        #print(lp[0])
+
         LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
         for bloc in LISTE_COLLISION_SOL:
             position_x = bloc.rect.x
@@ -316,7 +350,34 @@ class perso(pygame.sprite.Sprite):
             self.saut=0
             self.rect.y = position_y-73
 
-        if not len(LISTE_COLLISION_SOL) > 0:
+        for i in range(len(lp)-1):
+            
+            self.sol = False
+            #if i+1!=1:
+            if self.rect.clipline((lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1])):
+                x1,y1 = lp[i][0],lp[i][1]
+                x2,y2 = lp[i+1][0],lp[i+1][1]
+                print(lp[i],lp[i+1])
+                self.saut=0
+                self.chute_vitesse = 0
+                self.sol = True
+                pente = (y2-y1)/(x2-x1)
+                self.rect.y = y1+pente*(self.rect.x-x1) - 70
+            if self.sol:
+                pygame.draw.line(ecran, (0,255,0),(lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1]), 2)
+            else:
+                pygame.draw.line(ecran, (255,0,0),(lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1]), 2)
+
+        if not self.sol:    
+            self.saut=1
+            self.chute_vitesse += 1
+            self.rect.y = self.rect.y + self.chute_vitesse
+            self.avance_gauche = 10
+            self.avance_droite = 10
+                    
+            #self.rect.y = lp[i-1][1]-73
+
+        '''if not len(LISTE_COLLISION_SOL) > 0 and not self.rect.clipline(lp[1],lp[3]):
             if len(LISTE_COLLISION_MUR) > 0:
                 for bloc in LISTE_COLLISION_MUR:
                     position_x = bloc.rect.x
@@ -332,7 +393,9 @@ class perso(pygame.sprite.Sprite):
                 self.chute_vitesse += 1
                 self.rect.y = self.rect.y + self.chute_vitesse
                 self.avance_gauche = 10
-                self.avance_droite = 10
+                self.avance_droite = 10'''
+
+
 
 
         LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, False)
@@ -363,5 +426,5 @@ class perso(pygame.sprite.Sprite):
                     CADEAUX.add(_cad)
                     #LISTE_AFFICH.add(_cad)
                     LISTE_GLOBALE_SPRITES.add(_cad)
-                    print("cadeau")
+                    #print("cadeau")
                 

@@ -68,11 +68,12 @@ fond = pygame.image.load("fond.png").convert_alpha()
 
 
 # Ouvrir le fichier en mode lecture
-with open('map2.pg', 'r') as fichier:
+with open('map3.pg', 'r') as fichier:
     # Lire toutes les lignes du fichier dans une liste
     lignes = fichier.readlines()
     fichier.seek(0)
     lines = fichier.read()
+
 
 XX = 0
 YY = 0
@@ -87,7 +88,7 @@ for l in range(len(lignes)):
             _mur = MUR(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
             LISTE_MURS.add(_mur)
             LISTE_GLOBALE_SPRITES.add(_mur)
-        if lines[nb]=="S" or lines[nb]== "s" or lines[nb]== "T":
+        if lines[nb]=="S" or lines[nb]== "s" or lines[nb]== "T" or lines[nb]== "-":
             _sol = SOL(XX*TUILE_TAILLE, YY*TUILE_TAILLE,lines[nb])
             LISTE_SOLS.add(_sol)
             LISTE_GLOBALE_SPRITES.add(_sol)
@@ -95,10 +96,26 @@ for l in range(len(lignes)):
             _gomb = goomba(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
             LISTE_GOOMBA.add(_gomb)
             LISTE_GLOBALE_SPRITES.add(_gomb)
+        if lines[nb]=="." or lines[nb]=="*":
+            ma_liste.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE, lines[nb]])
+            _point = SOL_POINT(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
+            LISTE_point.add(_point)
+            LISTE_GLOBALE_SPRITES.add(_point)
+
         XX = XX + 1
         nb+=1
     XX = 0
     YY = YY + 1
+
+# Fonction de tri personnalisée
+def custom_sort(item):
+    return (item[0], item[2] != '*')
+
+# Trier la liste en utilisant la fonction de tri personnalisée
+lp = sorted(ma_liste, key=custom_sort)
+
+# Afficher le résultat
+print(lp)
 
 
 def affich_map(av):
@@ -109,14 +126,19 @@ def affich_map(av):
         if left == 1:
             personnag.orientation = "l"
             sprite.rect.x += personnag.avance_gauche*1.4
+            
         if right ==1:
             personnag.orientation = "r"
             sprite.rect.x -= personnag.avance_droite*1.4
 
         
-        if sprite.rect.x < w and sprite.rect.x > -45 and sprite.etat:
+        if sprite.rect.x < w and sprite.rect.x > -45 and sprite.etat and sprite.vie == 1:
             LISTE_AFFICH.add(sprite)
-
+    for i in range(len(lp)):
+        if left == 1:
+            lp[i][0] += personnag.avance_gauche*1.4
+        if right == 1: 
+            lp[i][0] -= personnag.avance_gauche*1.4
 
 
 personnag = perso()
@@ -131,9 +153,7 @@ continuer=True
 while continuer:
     
     w,h = pygame.display.get_surface().get_size()
-    #print(personnag.rect.y)
 
-    #colision(xperso,yperso)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -154,13 +174,12 @@ while continuer:
                 right=0
             if event.key == pygame.K_SPACE:
                 space=0
-                elapsed_time = pygame.time.get_ticks() - start_time
+                elapsed_time = pygame.time.get_ticks() - start_time + 50
                 if elapsed_time > 150:
                     elapsed_time = 150
 
 
 
-        print(elapsed_time)
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 1:
                 space = 1
@@ -197,18 +216,17 @@ while continuer:
 
 
     ecran.blit(fond,(fondx,0))
-    #personnag.avancer(right, left,space, ecran)
-    #print("bc",personnag.a)
     affich_map(personnag.av)
     LISTE_AFFICH.update(ecran)
+    liste_de_sprites = list(LISTE_point)
     if personnag.vie > 0:
-        personnag.avancer(right, left,space, ecran, elapsed_time)
+        personnag.avancer(right, left,space, ecran, elapsed_time, lp)
     elapsed_time = 0
-    #LISTE_GOOMBA.draw(ecran)
 
 
     LISTE_AFFICH.draw(ecran)
     CADEAUX.draw(ecran)
+    #LISTE_point.update(ecran)
 
     if personnag.vie == 0:
         #del personnag
@@ -216,20 +234,11 @@ while continuer:
         gameover = POLICE_ARIAL.render("GAMEOVER",1,ROUGE)
         gameover_rect = gameover.get_rect()
         ecran.blit(gameover,(w/2-gameover_rect[2]/2,h/2-gameover_rect[3]/2))
-        #sleep(4)
 
-
-
-    #print(personnag.xperso)
-
-
- 
 
     # Limiter la vitesse de l'animation
     clock.tick(personnag.frame_rate)
 
-
-    #ecran.blit(mur, (10, 10))
 
     pygame.display.flip()
 
