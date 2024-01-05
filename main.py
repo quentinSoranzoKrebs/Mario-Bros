@@ -50,7 +50,7 @@ yblocs = 0
 colision_yperso = True
 colision_xperso = True
 
-ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
+ecran = pygame.display.set_mode((1300,650),pygame.FULLSCREEN | pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
 

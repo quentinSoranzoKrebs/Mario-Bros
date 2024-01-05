@@ -3,6 +3,7 @@ import imageio
 from constantes import *
 from time import sleep
 from random import randint
+import math
 
 pygame.init()
 
@@ -42,22 +43,7 @@ class MUR(pygame.sprite.Sprite):
 class SOL(pygame.sprite.Sprite):
     def __init__(self, x, y, B):
         pygame.sprite.Sprite.__init__(self)
-        global s
-        global randint
-        if B=="-":
-            sol = "S"+str(s)+".png"
-            self.image = pygame.image.load(sol).convert_alpha()
-            s += 1
-            if s == 7:
-                s = 1
-            rand = randint(0,5)
-            #print(rand)
-            if s >= 5 and randint(1,5) == 1:
-                s = 5
-        if B=="s":
-            self.image = pygame.image.load("S\.png").convert_alpha()
-        if B=="T":
-            self.image = pygame.image.load("T.png").convert_alpha()
+        self.image = pygame.image.load("S.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.y = y 
         self.rect.x = x
@@ -259,16 +245,12 @@ class perso(pygame.sprite.Sprite):
         self.av = 0
         self.orientation = "-"
         self.saut = 0
-        self.saut_pos = 0
-        self.saut_fin = 0
         self.chute_vitesse = 20
-        self.saut_vitesse = 38
         self.av_vitesse = 5
         self.vie = 4
 
         self.ldirect=True
         self.rdirect=True
-        self.a = 0
         self.etat = True
         self.avance_droite = 10
         self.avance_gauche = 10
@@ -314,7 +296,7 @@ class perso(pygame.sprite.Sprite):
                 self.image = self.symmetrical_frame
             
 
-
+        self.sol = False
         
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
 
@@ -326,7 +308,6 @@ class perso(pygame.sprite.Sprite):
             if position_y>self.rect.y+74/2:
                 self.rect.y = position_y-73
                 self.saut=0
-                #self.saut_vitesse = 48
 
             if position_y+45<self.rect.y+70:
                 bloc.rect.y = bloc.rect.y - 10
@@ -338,10 +319,10 @@ class perso(pygame.sprite.Sprite):
                 self.avance_gauche = 0
             if position_x>self.rect.x and not position_y>self.rect.y+74/2:
                 self.avance_droite = 0
+
+        if len(LISTE_COLLISION_MUR) > 0 : 
+            self.sol = True
             
-
-
-        #print(lp[0])
 
         LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
         for bloc in LISTE_COLLISION_SOL:
@@ -350,10 +331,9 @@ class perso(pygame.sprite.Sprite):
             self.saut=0
             self.rect.y = position_y-73
 
+
         for i in range(len(lp)-1):
-            
-            self.sol = False
-            #if i+1!=1:
+
             if self.rect.clipline((lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1])):
                 x1,y1 = lp[i][0],lp[i][1]
                 x2,y2 = lp[i+1][0],lp[i+1][1]
@@ -365,6 +345,7 @@ class perso(pygame.sprite.Sprite):
                 self.rect.y = y1+pente*(self.rect.x-x1) - 70
             if self.sol:
                 pygame.draw.line(ecran, (0,255,0),(lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1]), 2)
+
             else:
                 pygame.draw.line(ecran, (255,0,0),(lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1]), 2)
 
