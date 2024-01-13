@@ -11,6 +11,8 @@ info = pygame.display.Info()
 
 largeur_ecran = info.current_w
 hauteur_ecran = info.current_h
+
+# intro
 '''
 loading = pygame.display.set_mode((largeur_ecran/2,hauteur_ecran/2),pygame.NOFRAME | pygame.SWSURFACE)
 w,h = pygame.display.get_surface().get_size()
@@ -50,9 +52,15 @@ yblocs = 0
 colision_yperso = True
 colision_xperso = True
 
-ecran = pygame.display.set_mode((1300,650),pygame.FULLSCREEN | pygame.RESIZABLE)
+ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
+
+# Charger l'icône
+icone = pygame.image.load("champignon.png")
+
+# Définir l'icône de la fenêtre
+pygame.display.set_icon(icone)
 
 nombre_manettes = pygame.joystick.get_count()
 for i in range(nombre_manettes):
@@ -65,10 +73,11 @@ background.fill(NOIR)
 
 
 fond = pygame.image.load("fond.png").convert_alpha()
+ma_liste2 = []
 
 
 # Ouvrir le fichier en mode lecture
-with open('map3.pg', 'r') as fichier:
+with open('map4.pg', 'r') as fichier:
     # Lire toutes les lignes du fichier dans une liste
     lignes = fichier.readlines()
     fichier.seek(0)
@@ -95,9 +104,11 @@ for l in range(len(lignes)):
         if lines[nb]=="G":
             _gomb = goomba(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
             LISTE_GOOMBA.add(_gomb)
+            VIVANT.add(_gomb)
             LISTE_GLOBALE_SPRITES.add(_gomb)
         if lines[nb]=="." or lines[nb]=="*":
             ma_liste.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE, lines[nb]])
+            ma_liste2.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE])
             _point = SOL_POINT(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
             LISTE_point.add(_point)
             LISTE_GLOBALE_SPRITES.add(_point)
@@ -110,13 +121,38 @@ for l in range(len(lignes)):
 # Fonction de tri personnalisée
 def custom_sort(item):
     return (item[0], item[2] != '*')
-
 # Trier la liste en utilisant la fonction de tri personnalisée
 lp = sorted(ma_liste, key=custom_sort)
+lpp = sorted(ma_liste2, key=lambda x: x[0])
 
-# Afficher le résultat
-print(lp)
+lpp.insert(0, [0,h])
+end = lpp[len(lpp)-1][0]
+lpp.insert(0, [end,h])
 
+print(w,h,lpp)
+
+
+w,h = pygame.display.get_surface().get_size()
+
+for i in range(len(lp)-1):
+    x1,y1 = lp[i][0],lp[i][1]
+    x2,y2 = lp[i+1][0],lp[i+1][1]
+    pente = (y2-y1)/(x2-x1)
+    coté1 = lp[i+1][0]-lp[i][0]
+    coté2 = lp[i+1][1]-lp[i][1]
+    coté3 = math.sqrt(coté1*coté1+coté2*coté2)
+    angle = math.degrees(math.atan2(coté1, coté2))-90
+    test = Sol_line(0,0,angle,"S")
+    larg = test.rect[2]
+    print(larg)
+    print(angle, "°")
+    for n in range(int(coté3/TUILE_TAILLE)):
+        x = x1+n*TUILE_TAILLE
+        y = y1+(x1 +n*TUILE_TAILLE-x1)*(y2-y1)/(x2-x1)
+        _sol = Sol_line(x,y-angle/34*20,angle,"S")
+        LISTE_GLOBALE_SPRITES.add(_sol)
+
+print("fin")
 
 def affich_map(av):
     LISTE_AFFICH.empty()
@@ -124,26 +160,31 @@ def affich_map(av):
         LISTE_AFFICH.add(personnag)
     for sprite in LISTE_GLOBALE_SPRITES:
         if left == 1:
-            personnag.orientation = "l"
+            personnag.direction = "l"
             sprite.rect.x += personnag.avance_gauche*1.4
             
         if right ==1:
-            personnag.orientation = "r"
+            personnag.direction = "r"
             sprite.rect.x -= personnag.avance_droite*1.4
 
         
-        if sprite.rect.x < w and sprite.rect.x > -45 and sprite.etat and sprite.vie == 1:
+        if sprite.rect.x < w and sprite.rect.x > -TUILE_TAILLE and sprite.etat and sprite.vie == 1:
             LISTE_AFFICH.add(sprite)
     for i in range(len(lp)):
         if left == 1:
             lp[i][0] += personnag.avance_gauche*1.4
         if right == 1: 
             lp[i][0] -= personnag.avance_gauche*1.4
+    for i in range(len(lpp)):
+        if left == 1:
+            lpp[i][0] += personnag.avance_gauche*1.4
+        if right == 1: 
+            lpp[i][0] -= personnag.avance_gauche*1.4
 
 
 personnag = perso()
+VIVANT.add(personnag)
 LISTE_AFFICH.add(personnag)
-goomb = goomba(500,0)
 
 
 
@@ -216,11 +257,16 @@ while continuer:
 
 
     ecran.blit(fond,(fondx,0))
+    pygame.draw.polygon(ecran, (227, 153, 76), lpp)
     affich_map(personnag.av)
     LISTE_AFFICH.update(ecran)
     liste_de_sprites = list(LISTE_point)
+    print(LISTE_GOOMBA)
+    for sprite in LISTE_GOOMBA:
+        sprite.collision(right, left, ecran, lp)
     if personnag.vie > 0:
-        personnag.avancer(right, left,space, ecran, elapsed_time, lp)
+        personnag.avancer(right, left, space, ecran, elapsed_time, lp)
+        personnag.collision(right, left, ecran, lp)
     elapsed_time = 0
 
 

@@ -17,17 +17,76 @@ LISTE_GOOMBA = pygame.sprite.Group()
 LISTE_AFFICH = pygame.sprite.Group()
 LISTE_point = pygame.sprite.Group()
 liste_point = pygame.sprite.Group()
+VIVANT = pygame.sprite.Group()
 lp = ()
 ma_liste = []
-s = 1
-rand = randint(0,5)
-pente = 0
+
+
+
+
+
+class vivant():
+    def __init__(self):
+        self.direction = "l"
+        self.sol = False
+        self.etat = True
+        self.pente = 0
+        self.chute_vitesse = 20
+
+    def collision(self, right, left, ecran, lp):
+        self.sol = False
+
+        # collision avec le sol
+        for i in range(len(lp)-1):
+            if self.rect.clipline((lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1])):
+                x1,y1 = lp[i][0],lp[i][1]
+                x2,y2 = lp[i+1][0],lp[i+1][1]
+                self.saut=0
+                self.chute_vitesse = 0
+                self.sol = True
+                self.pente = (y2-y1)/(x2-x1)
+                self.rect.y = y1+self.pente*(self.rect.x-x1) - 70
+        
+        # collision avec les mur
+        LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
+
+        self.avance_gauche = 10
+        self.avance_droite = 10
+        for bloc in LISTE_COLLISION_MUR:
+            position_x = bloc.rect.x
+            position_y = bloc.rect.y
+            if position_y>self.rect.y+74/2:
+                self.rect.y = position_y-73
+                self.saut=0
+
+            if position_y+45<self.rect.y+70:
+                bloc.rect.y = bloc.rect.y - 10
+                self.rect.y = Y_COURANT
+                self.chute_vitesse = 40
+
+
+            if position_x<self.rect.x and not position_y>self.rect.y+74/2:
+                self.avance_gauche = 0
+            if position_x>self.rect.x and not position_y>self.rect.y+74/2:
+                self.avance_droite = 0
+
+        if len(LISTE_COLLISION_MUR) > 0 : 
+            self.sol = True
+
+        # aucune collision
+        if not self.sol:    
+            self.saut=1
+            self.chute_vitesse += 1
+            self.rect.y = self.rect.y + self.chute_vitesse
+            self.avance_gauche = 10
+            self.avance_droite = 10
 
 
 class MUR(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("M.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
@@ -44,6 +103,7 @@ class SOL(pygame.sprite.Sprite):
     def __init__(self, x, y, B):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("S.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y 
         self.rect.x = x
@@ -54,6 +114,7 @@ class SOL_POINT(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("C.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect(center=(self.image.get_width() // 2, self.image.get_height() // 2))
         self.rect.y = y
         self.rect.x = x
@@ -76,6 +137,7 @@ class BOX(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("C.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
@@ -87,11 +149,31 @@ class TUI(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("C.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
         self.etat = True
         self.vie = 1
+
+class Sol_line(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle, type):
+        pygame.sprite.Sprite.__init__(self)
+        if type == "S":
+            self.image = pygame.image.load("S.png").convert_alpha()
+            self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
+            self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
+            self.image = pygame.transform.rotate(self.image,angle)
+            self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
+        elif type == "T":
+            self.image = pygame.image.load("T.png").convert_alpha()
+            self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
+            self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
+        self.rect.y = y
+        self.rect.x = x
+        self.etat = True
+        self.vie = 1
+
 
 
 class CAD(pygame.sprite.Sprite):
@@ -99,17 +181,18 @@ class CAD(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
 
         image = pygame.image.load("champignon.png").convert_alpha()
-        self.image = pygame.transform.scale(image, (TUILE_TAILLE, TUILE_TAILLE))
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
+        self.image = pygame.transform.scale(center=(image, (TUILE_TAILLE, TUILE_TAILLE)))
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
         self.etat = True
-        self.direction = "right"
+        self.direction = "r"
         self.vie = 1
-
+        
     def update(self,ecran):
         if self.etat:
-            if self.direction == "right":
+            if self.direction == "r":
                 self.rect.x -= 8
             else:
                 self.rect.x += 8
@@ -126,10 +209,10 @@ class CAD(pygame.sprite.Sprite):
                 position_x = bloc.rect.x
                 position_y = bloc.rect.y
                 if position_x+TUILE_TAILLE < self.rect.x+69 and not position_y > self.rect.y + 40:
-                    self.direction = "left"
+                    self.direction = "l"
 
                 if position_x > self.rect.x and not position_y > self.rect.y + 40:
-                    self.direction = "right"
+                    self.direction = "r"
 
                 if position_y > self.rect.y + 40:
                     self.rect.y = position_y-44
@@ -138,9 +221,10 @@ class CAD(pygame.sprite.Sprite):
                 self.rect.y +=20
 
 
-class goomba(pygame.sprite.Sprite):
+class goomba(pygame.sprite.Sprite, vivant):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
+        vivant.__init__(self)
 
 
         gif_path = 'goomba.gif'
@@ -167,54 +251,33 @@ class goomba(pygame.sprite.Sprite):
         self.rect = pygame.Rect(x, y, 70, 70)
         self.rect.y = y
         self.rect.x = x
-        self.direction = "right"
         self.vie = 1
-        self.etat = True
 
 
     def update(self,ecran):
         if self.vie > 0:
             self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
-            if self.direction == "right":
+            if self.direction == "r":
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 self.image = self.frames[self.current_frame]
                 self.rect.x -= 5
-            elif self.direction == "left":
+            elif self.direction == "l":
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 self.image = self.symmetrical_frame
                 self.rect.x +=5
 
-            LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
-            LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
-
-            for bloc in LISTE_COLLISION_SOL:
-                position_x = bloc.rect.x
-                position_y = bloc.rect.y
-                self.rect.y = position_y-67
-
-            for bloc in LISTE_COLLISION_MUR:
-                position_x = bloc.rect.x
-                position_y = bloc.rect.y
-                if position_x+TUILE_TAILLE < self.rect.x+69 and not position_y > self.rect.y + 40:
-                    self.direction = "left"
-
-                if position_x > self.rect.x and not position_y > self.rect.y + 40:
-                    self.direction = "right"
-
-                if position_y > self.rect.y + 40:
-                    self.rect.y = position_y-67
-
-            if not len(LISTE_COLLISION_SOL) > 0 and not len(LISTE_COLLISION_MUR) > 0:
-                self.rect.y +=20
+    def collision(self, right, left, ecran, lp):
+        super().collision(right, left, ecran, lp)
 
 
 
 
-class perso(pygame.sprite.Sprite):
+
+
+class perso(pygame.sprite.Sprite, vivant):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-
-
+        vivant.__init__(self)
 
         gif_path = 'mario2.gif'
 
@@ -238,12 +301,13 @@ class perso(pygame.sprite.Sprite):
         self.frame_rate = 15
         self.current_frame = 0
 
+
         self.image = self.img_stablel
         self.rect =  pygame.Rect(500, 0, 35, 74)
         self.rect.x = 500
         self.rect.y = 0
         self.av = 0
-        self.orientation = "-"
+        #self.direction = "r"
         self.saut = 0
         self.chute_vitesse = 20
         self.av_vitesse = 5
@@ -251,16 +315,18 @@ class perso(pygame.sprite.Sprite):
 
         self.ldirect=True
         self.rdirect=True
-        self.etat = True
         self.avance_droite = 10
         self.avance_gauche = 10
-        self.sol = False
         
         #print("self.rect: ",self.rect)
 
     def avancer(self, right, left, space, ecran, time, lp):
-        global pente
-        #self.chute_vitesse +=0.4
+
+        #if self.pente > 0:
+        self.avance_gauche = (1-self.pente)*10
+        self.avance_droite = (1-self.pente)*10
+
+
         if time > 0 and self.saut == 0 and space == 0:
             self.saut = 1
             self.chute_vitesse = -time/10
@@ -274,7 +340,7 @@ class perso(pygame.sprite.Sprite):
         if self.saut == 1:
             #self.rect.y -= self.saut_vitesse
             self.current_frame = 1
-            if self.orientation == "l":
+            if self.direction == "l":
                 self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
                 self.image = self.symmetrical_frame
             else:
@@ -282,9 +348,9 @@ class perso(pygame.sprite.Sprite):
 
 
         if self.saut == 0:
-            if self.orientation == "r":
+            if self.direction == "r":
                 self.image = self.img_stabler
-            elif self.orientation == "l":
+            elif self.direction == "l":
                 self.image = self.img_stablel
 
 
@@ -295,89 +361,8 @@ class perso(pygame.sprite.Sprite):
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 self.image = self.symmetrical_frame
             
-
-        self.sol = False
-        
-        LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
-
-        self.avance_gauche = 10
-        self.avance_droite = 10
-        for bloc in LISTE_COLLISION_MUR:
-            position_x = bloc.rect.x
-            position_y = bloc.rect.y
-            if position_y>self.rect.y+74/2:
-                self.rect.y = position_y-73
-                self.saut=0
-
-            if position_y+45<self.rect.y+70:
-                bloc.rect.y = bloc.rect.y - 10
-                self.rect.y = Y_COURANT
-                self.chute_vitesse = 40
-
-
-            if position_x<self.rect.x and not position_y>self.rect.y+74/2:
-                self.avance_gauche = 0
-            if position_x>self.rect.x and not position_y>self.rect.y+74/2:
-                self.avance_droite = 0
-
-        if len(LISTE_COLLISION_MUR) > 0 : 
-            self.sol = True
-            
-
-        LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
-        for bloc in LISTE_COLLISION_SOL:
-            position_x = bloc.rect.x
-            position_y = bloc.rect.y
-            self.saut=0
-            self.rect.y = position_y-73
-
-
-        for i in range(len(lp)-1):
-
-            if self.rect.clipline((lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1])):
-                x1,y1 = lp[i][0],lp[i][1]
-                x2,y2 = lp[i+1][0],lp[i+1][1]
-                print(lp[i],lp[i+1])
-                self.saut=0
-                self.chute_vitesse = 0
-                self.sol = True
-                pente = (y2-y1)/(x2-x1)
-                self.rect.y = y1+pente*(self.rect.x-x1) - 70
-            if self.sol:
-                pygame.draw.line(ecran, (0,255,0),(lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1]), 2)
-
-            else:
-                pygame.draw.line(ecran, (255,0,0),(lp[i][0],lp[i][1]),(lp[i+1][0],lp[i+1][1]), 2)
-
-        if not self.sol:    
-            self.saut=1
-            self.chute_vitesse += 1
-            self.rect.y = self.rect.y + self.chute_vitesse
-            self.avance_gauche = 10
-            self.avance_droite = 10
-                    
-            #self.rect.y = lp[i-1][1]-73
-
-        '''if not len(LISTE_COLLISION_SOL) > 0 and not self.rect.clipline(lp[1],lp[3]):
-            if len(LISTE_COLLISION_MUR) > 0:
-                for bloc in LISTE_COLLISION_MUR:
-                    position_x = bloc.rect.x
-                    position_y = bloc.rect.y
-                    if position_y+45<self.rect.y+70:
-                        self.saut=1
-                        self.chute_vitesse += 1
-                        self.rect.y = self.rect.y + self.chute_vitesse
-                        self.avance_gauche = 10
-                        self.avance_droite = 10
-            else:
-                self.saut=1
-                self.chute_vitesse += 1
-                self.rect.y = self.rect.y + self.chute_vitesse
-                self.avance_gauche = 10
-                self.avance_droite = 10'''
-
-
-
+    def collision(self, right, left, ecran, lp):
+        super().collision(right, left, ecran, lp)
 
         LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, False)
 
@@ -408,4 +393,6 @@ class perso(pygame.sprite.Sprite):
                     #LISTE_AFFICH.add(_cad)
                     LISTE_GLOBALE_SPRITES.add(_cad)
                     #print("cadeau")
-                
+
+
+
