@@ -20,6 +20,7 @@ liste_point = pygame.sprite.Group()
 VIVANT = pygame.sprite.Group()
 lp = ()
 ma_liste = []
+ma_liste2 = []
 
 
 
@@ -35,6 +36,9 @@ class vivant():
 
     def collision(self, right, left, ecran, lp):
         self.sol = False
+        X_COURANT = self.rect.x
+        Y_COURANT = self.rect.y
+        AV_COURANT = self.av
 
         # collision avec le sol
         for i in range(len(lp)-1):
@@ -50,8 +54,6 @@ class vivant():
         # collision avec les mur
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
 
-        self.avance_gauche = 10
-        self.avance_droite = 10
         for bloc in LISTE_COLLISION_MUR:
             position_x = bloc.rect.x
             position_y = bloc.rect.y
@@ -70,7 +72,7 @@ class vivant():
             if position_x>self.rect.x and not position_y>self.rect.y+74/2:
                 self.avance_droite = 0
 
-        if len(LISTE_COLLISION_MUR) > 0 : 
+        if len(LISTE_COLLISION_MUR) > 0 :
             self.sol = True
 
         # aucune collision
@@ -80,6 +82,7 @@ class vivant():
             self.rect.y = self.rect.y + self.chute_vitesse
             self.avance_gauche = 10
             self.avance_droite = 10
+
 
 
 class MUR(pygame.sprite.Sprite):
@@ -110,27 +113,6 @@ class SOL(pygame.sprite.Sprite):
         self.etat = True
         self.vie = 1
 
-class SOL_POINT(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("C.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
-        self.rect = self.image.get_rect(center=(self.image.get_width() // 2, self.image.get_height() // 2))
-        self.rect.y = y
-        self.rect.x = x
-        self.vie = 0
-        self.etat = True
-    def update(self,ecran):
-        for i in range(len(LISTE_point)):
-            if i+1!=1:
-                premier_sprite = LISTE_point.sprites()[i-1]
-                position1_x = premier_sprite.rect.x
-                position1_y = premier_sprite.rect.y
-                deuxième_sprite = LISTE_point.sprites()[i]
-                position2_x = deuxième_sprite.rect.x
-                position2_y = deuxième_sprite.rect.y
-                pygame.draw.line(ecran, NOIR, (position1_x,position1_y), (position2_x,position2_y), 2)
-
 
 
 class BOX(pygame.sprite.Sprite):
@@ -145,6 +127,8 @@ class BOX(pygame.sprite.Sprite):
         self.vie = 1
         #print("ok")
 
+
+
 class TUI(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -156,18 +140,18 @@ class TUI(pygame.sprite.Sprite):
         self.etat = True
         self.vie = 1
 
+
+
 class Sol_line(pygame.sprite.Sprite):
     def __init__(self, x, y, angle, type):
         pygame.sprite.Sprite.__init__(self)
         if type == "S":
             self.image = pygame.image.load("S.png").convert_alpha()
-            self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
             self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
             self.image = pygame.transform.rotate(self.image,angle)
             self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
         elif type == "T":
             self.image = pygame.image.load("T.png").convert_alpha()
-            self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
             self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
         self.rect.y = y
         self.rect.x = x
@@ -189,7 +173,7 @@ class CAD(pygame.sprite.Sprite):
         self.etat = True
         self.direction = "r"
         self.vie = 1
-        
+
     def update(self,ecran):
         if self.etat:
             if self.direction == "r":
@@ -219,6 +203,7 @@ class CAD(pygame.sprite.Sprite):
 
             if not len(LISTE_COLLISION_SOL) > 0 and not len(LISTE_COLLISION_MUR) > 0:
                 self.rect.y +=20
+
 
 
 class goomba(pygame.sprite.Sprite, vivant):
@@ -268,9 +253,6 @@ class goomba(pygame.sprite.Sprite, vivant):
 
     def collision(self, right, left, ecran, lp):
         super().collision(right, left, ecran, lp)
-
-
-
 
 
 

@@ -73,7 +73,6 @@ background.fill(NOIR)
 
 
 fond = pygame.image.load("fond.png").convert_alpha()
-ma_liste2 = []
 
 
 # Ouvrir le fichier en mode lecture
@@ -109,9 +108,6 @@ for l in range(len(lignes)):
         if lines[nb]=="." or lines[nb]=="*":
             ma_liste.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE, lines[nb]])
             ma_liste2.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE])
-            _point = SOL_POINT(XX*TUILE_TAILLE, YY*TUILE_TAILLE)
-            LISTE_point.add(_point)
-            LISTE_GLOBALE_SPRITES.add(_point)
 
         XX = XX + 1
         nb+=1
@@ -129,7 +125,6 @@ lpp.insert(0, [0,h])
 end = lpp[len(lpp)-1][0]
 lpp.insert(0, [end,h])
 
-print(w,h,lpp)
 
 
 w,h = pygame.display.get_surface().get_size()
@@ -144,15 +139,14 @@ for i in range(len(lp)-1):
     angle = math.degrees(math.atan2(coté1, coté2))-90
     test = Sol_line(0,0,angle,"S")
     larg = test.rect[2]
-    print(larg)
-    print(angle, "°")
     for n in range(int(coté3/TUILE_TAILLE)):
         x = x1+n*TUILE_TAILLE
-        y = y1+(x1 +n*TUILE_TAILLE-x1)*(y2-y1)/(x2-x1)
-        _sol = Sol_line(x,y-angle/34*20,angle,"S")
+        y = y1+(x1 +n*TUILE_TAILLE-x1)*(y2-y1)/(x2-x1)  #-math.sqrt(TUILE_TAILLE*TUILE_TAILLE-.rect[2]*)
+        
+        _sol = Sol_line(x,y,angle,"S")
+            
         LISTE_GLOBALE_SPRITES.add(_sol)
 
-print("fin")
 
 def affich_map(av):
     LISTE_AFFICH.empty()
@@ -170,17 +164,23 @@ def affich_map(av):
         
         if sprite.rect.x < w and sprite.rect.x > -TUILE_TAILLE and sprite.etat and sprite.vie == 1:
             LISTE_AFFICH.add(sprite)
+
     for i in range(len(lp)):
         if left == 1:
+            personnag.direction = "l"
             lp[i][0] += personnag.avance_gauche*1.4
-        if right == 1: 
-            lp[i][0] -= personnag.avance_gauche*1.4
+        if right == 1:
+            personnag.direction = "r"
+            lp[i][0] -= personnag.avance_droite*1.4
+
     for i in range(len(lpp)):
         if left == 1:
+            personnag.direction = "l"
             lpp[i][0] += personnag.avance_gauche*1.4
         if right == 1: 
-            lpp[i][0] -= personnag.avance_gauche*1.4
-
+            personnag.direction = "r"
+            lpp[i][0] -= personnag.avance_droite*1.4
+    print(personnag.avance_gauche,personnag.avance_droite)
 
 personnag = perso()
 VIVANT.add(personnag)
@@ -261,7 +261,6 @@ while continuer:
     affich_map(personnag.av)
     LISTE_AFFICH.update(ecran)
     liste_de_sprites = list(LISTE_point)
-    print(LISTE_GOOMBA)
     for sprite in LISTE_GOOMBA:
         sprite.collision(right, left, ecran, lp)
     if personnag.vie > 0:

@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Enregistrer et exécuter",
+      "type": "shell",
+      "command": "echo 'Enregistrement des fichiers...'",
+      "command": "code --save",  // Enregistrez tous les fichiers dans VS Code
+      "command": "python",
+      "args": ["${file}"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
+
