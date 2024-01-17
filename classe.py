@@ -1,9 +1,11 @@
 import pygame
 import imageio
 from constantes import *
+from fonctions import *
 from time import sleep
 from random import randint
 import math
+from tkinter import messagebox
 
 pygame.init()
 
@@ -38,7 +40,6 @@ class vivant():
         self.sol = False
         X_COURANT = self.rect.x
         Y_COURANT = self.rect.y
-        AV_COURANT = self.av
 
         # collision avec le sol
         for i in range(len(lp)-1):
@@ -82,6 +83,8 @@ class vivant():
             self.rect.y = self.rect.y + self.chute_vitesse
             self.avance_gauche = 10
             self.avance_droite = 10
+        elif self.sol:
+            self.chute_vitesse = 0
 
 
 
@@ -160,13 +163,13 @@ class Sol_line(pygame.sprite.Sprite):
 
 
 
-class CAD(pygame.sprite.Sprite):
+class CAD(pygame.sprite.Sprite,vivant):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
 
-        image = pygame.image.load("champignon.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
-        self.image = pygame.transform.scale(center=(image, (TUILE_TAILLE, TUILE_TAILLE)))
+        self.image = pygame.image.load("champignon.png").convert_alpha()
+        #self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
+        self.image = pygame.transform.scale(self.image, (TUILE_TAILLE, TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
@@ -252,7 +255,19 @@ class goomba(pygame.sprite.Sprite, vivant):
                 self.rect.x +=5
 
     def collision(self, right, left, ecran, lp):
+        LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, False)
+
+        for bloc in LISTE_COLLISION_MONSTRE:
+            position_x = bloc.rect.x
+            position_y = bloc.rect.y
+            if bloc.etat:
+                if position_y-10 > self.rect.y:
+                    self.sol = True
+                    self.rect.y = bloc.rect.y-71
+                    
+
         super().collision(right, left, ecran, lp)
+
 
 
 
@@ -264,8 +279,10 @@ class perso(pygame.sprite.Sprite, vivant):
         gif_path = 'mario2.gif'
 
         self.imge = imageio.get_reader(gif_path)
-        self.img_stabler = pygame.image.load("stabler.png").convert_alpha()
-        self.img_stablel = pygame.image.load("stablel.png").convert_alpha()
+        self.img_stabler = pygame.image.load("stabler1.png").convert_alpha()
+        self.img_stabler = pygame.transform.scale(self.img_stabler, (75,75))
+        self.img_stablel = pygame.image.load("stablel1.png").convert_alpha()
+        self.img_stablel = pygame.transform.scale(self.img_stablel, (75,75))
 
 
         first_frame = self.imge.get_data(0)
@@ -284,8 +301,8 @@ class perso(pygame.sprite.Sprite, vivant):
         self.current_frame = 0
 
 
-        self.image = self.img_stablel
-        self.rect =  pygame.Rect(500, 0, 35, 74)
+        self.image = self.img_stabler
+        self.rect =  pygame.Rect(500, 0, 74, 74)
         self.rect.x = 500
         self.rect.y = 0
         self.av = 0
@@ -304,9 +321,13 @@ class perso(pygame.sprite.Sprite, vivant):
 
     def avancer(self, right, left, space, ecran, time, lp):
 
-        #if self.pente > 0:
-        self.avance_gauche = (1-self.pente)*10
-        self.avance_droite = (1-self.pente)*10
+        if self.pente > 0:
+            self.avance_gauche = self.pente*10
+        elif self.pente < 0:
+            self.avance_droite = self.pente*10
+        else:
+            self.avance_gauche = 10
+            self.avance_droite = 10
 
 
         if time > 0 and self.saut == 0 and space == 0:
@@ -314,9 +335,6 @@ class perso(pygame.sprite.Sprite, vivant):
             self.chute_vitesse = -time/10
             self.rect.y = self.rect.y + self.chute_vitesse
             self.saut_vitesse = time/3
-        X_COURANT = self.rect.x
-        Y_COURANT = self.rect.y
-        AV_COURANT = self.av
         self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
 
         if self.saut == 1:
@@ -378,3 +396,23 @@ class perso(pygame.sprite.Sprite, vivant):
 
 
 
+class btn:
+    def __init__(self,couleur,text,suite,place,taille):
+        POLICE_ARIAL = pygame.font.SysFont("Arial",taille,1,1)
+        self.text = POLICE_ARIAL.render(text,1,couleur)
+        self.text_rect = self.text.get_rect()
+        self.rect = pygame.Rect(place[0], place[1], self.text_rect[2]+taille/2*2, self.text_rect[3]+taille/3*2)
+        self.taille = taille
+        self.place = place
+        self.suite = suite
+    def draw(self,surface,clic):
+        point = pygame.mouse.get_pos()
+        collide = self.rect.collidepoint(point)
+        if collide:
+            color = (0,115,229)
+            if clic == 1:
+                self.suite()
+        else:
+            color = (200,200,200)
+        draw_rounded_rect(surface, color, self.rect, self.taille/1.2)
+        surface.blit(self.text,(self.place[0]+self.taille/2,self.place[1]+self.taille/3))

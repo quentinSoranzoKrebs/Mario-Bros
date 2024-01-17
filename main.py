@@ -1,8 +1,12 @@
 import pygame
+from tkinter import messagebox
 import imageio
 from gif import *
+from fonctions import *
 from classe import *
 from time import sleep
+import pygame_gui
+
 
 
 pygame.init()
@@ -46,21 +50,27 @@ start_time = 0
 
 marge = 0.1
 
+clic = 0
+
 xblocs = 0
 yblocs = 0
 
 colision_yperso = True
 colision_xperso = True
 
+boutons = []
+
 ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
 
 # Charger l'icône
-icone = pygame.image.load("champignon.png")
+icone = pygame.image.load("ico.png")
 
 # Définir l'icône de la fenêtre
 pygame.display.set_icon(icone)
+
+
 
 nombre_manettes = pygame.joystick.get_count()
 for i in range(nombre_manettes):
@@ -132,19 +142,25 @@ w,h = pygame.display.get_surface().get_size()
 for i in range(len(lp)-1):
     x1,y1 = lp[i][0],lp[i][1]
     x2,y2 = lp[i+1][0],lp[i+1][1]
-    pente = (y2-y1)/(x2-x1)
+    if (x2-x1) == 0:
+        pente = 1
+    else:
+        pente = (y2-y1)/(x2-x1)
     coté1 = lp[i+1][0]-lp[i][0]
     coté2 = lp[i+1][1]-lp[i][1]
     coté3 = math.sqrt(coté1*coté1+coté2*coté2)
     angle = math.degrees(math.atan2(coté1, coté2))-90
     test = Sol_line(0,0,angle,"S")
     larg = test.rect[2]
+    rect = test.image.get_rect()
     for n in range(int(coté3/TUILE_TAILLE)):
         x = x1+n*TUILE_TAILLE
-        y = y1+(x1 +n*TUILE_TAILLE-x1)*(y2-y1)/(x2-x1)  #-math.sqrt(TUILE_TAILLE*TUILE_TAILLE-.rect[2]*)
-        
-        _sol = Sol_line(x,y,angle,"S")
-            
+        y = y1+(x1 +n*TUILE_TAILLE-x1)*pente  #-math.sqrt(TUILE_TAILLE*TUILE_TAILLE-.rect[2]*)
+        if pente > 0:
+            _sol = Sol_line(x,y-rect[3]+18*2,angle,"S")
+        else:
+            _sol = Sol_line(x,y-rect[3]+18,angle,"S")
+
         LISTE_GLOBALE_SPRITES.add(_sol)
 
 
@@ -180,25 +196,37 @@ def affich_map(av):
         if right == 1: 
             personnag.direction = "r"
             lpp[i][0] -= personnag.avance_droite*1.4
-    print(personnag.avance_gauche,personnag.avance_droite)
+    
+    if left == 1:
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 74, 74)
+    if right == 1:
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 74, 74)
+    else:
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 1, 74)
 
 personnag = perso()
 VIVANT.add(personnag)
 LISTE_AFFICH.add(personnag)
 
 
-
+ecrire(ecran,ROUGE,"test",(0,0),10)
 
 continuer=True
+clock = pygame.time.Clock()
+
+Quitter = btn(BLANC,"Quitter",quitter,(w/2-25,h-50*2),50)
 
 while continuer:
+    time_delta = clock.tick(60) / 1000.0
     
     w,h = pygame.display.get_surface().get_size()
 
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            continuer=False
+            quitter()
+            
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 left=1
@@ -241,6 +269,14 @@ while continuer:
                     left = 0
                     right = 0
 
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                clic = 1
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                clic = 0
+
 
     if left==1 and personnag.rect.x>0 and personnag.avance_gauche>0:
         fondx=fondx+1
@@ -261,7 +297,7 @@ while continuer:
     affich_map(personnag.av)
     LISTE_AFFICH.update(ecran)
     liste_de_sprites = list(LISTE_point)
-    for sprite in LISTE_GOOMBA:
+    for sprite in VIVANT:
         sprite.collision(right, left, ecran, lp)
     if personnag.vie > 0:
         personnag.avancer(right, left, space, ecran, elapsed_time, lp)
@@ -280,10 +316,16 @@ while continuer:
         gameover_rect = gameover.get_rect()
         ecran.blit(gameover,(w/2-gameover_rect[2]/2,h/2-gameover_rect[3]/2))
 
+    for p in range(len(lp)-1):
+        pygame.draw.line(ecran,ROUGE,(lp[p][0],lp[p][1]),(lp[p+1][0],lp[p+1][1]))
 
+    ecrire(ecran,NOIR,"vie: "+str(personnag.vie),(0,0),40)
     # Limiter la vitesse de l'animation
     clock.tick(personnag.frame_rate)
 
+    #bouton(ecran,BLANC,"salut Machin",dire_bonjour,(50,50),50)
+
+    Quitter.draw(ecran,clic)
 
     pygame.display.flip()
 
