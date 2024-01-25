@@ -306,8 +306,8 @@ while continuer:
 
 
     ecran.blit(fond,(fondx,0))
-    pygame.draw.polygon(ecran, (227, 153, 76), lp)
     affich_map(personnag.av)
+    pygame.draw.polygon(ecran, (227, 153, 76), lp)
     LISTE_AFFICH.update(ecran)
     liste_de_sprites = list(LISTE_point)
     for sprite in VIVANT:
@@ -337,9 +337,7 @@ while continuer:
 
     
 
-    
-    font = pygame.font.Font("calibri-font/calibri-regular.ttf", 36)
-    text_surface = font.render('Bonjour, Calibri!', True, (0, 0, 0))
+
 
 
     ecran.blit(text_surface,(w/2,h/2))

@@ -49,7 +49,10 @@ class vivant():
                 self.saut=0
                 self.chute_vitesse = 0
                 self.sol = True
-                self.pente = (y2-y1)/(x2-x1)
+                try:
+                    self.pente = (y2-y1)/(x2-x1)
+                except ZeroDivisionError:
+                    pass
                 self.rect.y = y1+self.pente*(self.rect.x-x1) - 70
         
         # collision avec les mur
