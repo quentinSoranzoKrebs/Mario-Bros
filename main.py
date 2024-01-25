@@ -1,5 +1,5 @@
 import pygame
-from tkinter import messagebox
+#from tk import messagebox
 import imageio
 from gif import *
 from fonctions import *
@@ -70,7 +70,8 @@ icone = pygame.image.load("ico.png")
 # Définir l'icône de la fenêtre
 pygame.display.set_icon(icone)
 
-
+coeur = pygame.image.load("coeur.png").convert_alpha()
+coeur = pygame.transform.scale(coeur, (30,30))
 
 nombre_manettes = pygame.joystick.get_count()
 for i in range(nombre_manettes):
@@ -83,6 +84,9 @@ background.fill(NOIR)
 
 
 fond = pygame.image.load("fond.png").convert_alpha()
+wt = round(h/(h-fond.get_height())*w)
+print(wt)
+fond = pygame.transform.scale(fond, (wt,h))
 
 
 # Ouvrir le fichier en mode lecture
@@ -127,14 +131,27 @@ for l in range(len(lignes)):
 # Fonction de tri personnalisée
 def custom_sort(item):
     return (item[0], item[2] != '*')
+
+# Fonction de tri personnalisée
+'''def custom_sort2(item):
+    it = item[2]
+    del item[2]
+    return (item[0], it != '*')'''
+
+
+
 # Trier la liste en utilisant la fonction de tri personnalisée
 lp = sorted(ma_liste, key=custom_sort)
-lpp = sorted(ma_liste2, key=lambda x: x[0])
+lpp = sorted(ma_liste, key=custom_sort)
 
-lpp.insert(0, [0,h])
-end = lpp[len(lpp)-1][0]
-lpp.insert(0, [end,h])
+lpp1 = sorted(ma_liste2, key=lambda x: x[0])
 
+
+for element in lp:
+    del element[2]
+
+
+print(lp)
 
 
 w,h = pygame.display.get_surface().get_size()
@@ -163,11 +180,15 @@ for i in range(len(lp)-1):
 
         LISTE_GLOBALE_SPRITES.add(_sol)
 
+lp.insert(0, [0,h])
+end = lp[len(lp)-1][0]
+lp.insert(0, [end,h])
 
 def affich_map(av):
     LISTE_AFFICH.empty()
     if personnag.vie > 0:
         LISTE_AFFICH.add(personnag)
+        
     for sprite in LISTE_GLOBALE_SPRITES:
         if left == 1:
             personnag.direction = "l"
@@ -181,45 +202,37 @@ def affich_map(av):
         if sprite.rect.x < w and sprite.rect.x > -TUILE_TAILLE and sprite.etat and sprite.vie == 1:
             LISTE_AFFICH.add(sprite)
 
-    for i in range(len(lp)):
+    for point in lp:
         if left == 1:
             personnag.direction = "l"
-            lp[i][0] += personnag.avance_gauche*1.4
+            point[0] += personnag.avance_gauche*1.4
         if right == 1:
             personnag.direction = "r"
-            lp[i][0] -= personnag.avance_droite*1.4
+            point[0] -= personnag.avance_droite*1.4
 
-    for i in range(len(lpp)):
-        if left == 1:
-            personnag.direction = "l"
-            lpp[i][0] += personnag.avance_gauche*1.4
-        if right == 1: 
-            personnag.direction = "r"
-            lpp[i][0] -= personnag.avance_droite*1.4
     
     if left == 1:
         personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 74, 74)
     if right == 1:
         personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 74, 74)
     else:
-        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 1, 74)
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 30, 74)
 
 personnag = perso()
 VIVANT.add(personnag)
 LISTE_AFFICH.add(personnag)
 
 
-ecrire(ecran,ROUGE,"test",(0,0),10)
-
 continuer=True
 clock = pygame.time.Clock()
 
-Quitter = btn(BLANC,"Quitter",quitter,(w/2-25,h-50*2),50)
+Quitter = btn(BLANC,"Quitter",quitter,50)
 
 while continuer:
     time_delta = clock.tick(60) / 1000.0
     
     w,h = pygame.display.get_surface().get_size()
+
 
 
     for event in pygame.event.get():
@@ -289,11 +302,11 @@ while continuer:
         space = 0
         elapsed_time = 170
 
-    symmetrical_frame = pygame.transform.flip(frames[current_frame], True, False)
+    #symmetrical_frame = pygame.transform.flip(frames[current_frame], True, False)
 
 
     ecran.blit(fond,(fondx,0))
-    pygame.draw.polygon(ecran, (227, 153, 76), lpp)
+    pygame.draw.polygon(ecran, (227, 153, 76), lp)
     affich_map(personnag.av)
     LISTE_AFFICH.update(ecran)
     liste_de_sprites = list(LISTE_point)
@@ -302,6 +315,9 @@ while continuer:
     if personnag.vie > 0:
         personnag.avancer(right, left, space, ecran, elapsed_time, lp)
         personnag.collision(right, left, ecran, lp)
+        ecran.blit(coeur,(0,3))
+        ecrire(ecran,NOIR,"x"+str(personnag.vie),(35,0),40)
+
     elapsed_time = 0
 
 
@@ -319,13 +335,20 @@ while continuer:
     for p in range(len(lp)-1):
         pygame.draw.line(ecran,ROUGE,(lp[p][0],lp[p][1]),(lp[p+1][0],lp[p+1][1]))
 
-    ecrire(ecran,NOIR,"vie: "+str(personnag.vie),(0,0),40)
-    # Limiter la vitesse de l'animation
+    
+
+    
+    font = pygame.font.Font("calibri-font/calibri-regular.ttf", 36)
+    text_surface = font.render('Bonjour, Calibri!', True, (0, 0, 0))
+
+
+    ecran.blit(text_surface,(w/2,h/2))
+
     clock.tick(personnag.frame_rate)
 
     #bouton(ecran,BLANC,"salut Machin",dire_bonjour,(50,50),50)
 
-    Quitter.draw(ecran,clic)
+    Quitter.draw(ecran,[w-Quitter.get_width()-5,5],clic)
 
     pygame.display.flip()
 

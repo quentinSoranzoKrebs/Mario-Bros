@@ -5,7 +5,7 @@ from fonctions import *
 from time import sleep
 from random import randint
 import math
-from tkinter import messagebox
+#from tkinter import messagebox
 
 pygame.init()
 
@@ -91,7 +91,7 @@ class vivant():
 class MUR(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("M.png").convert_alpha()
+        self.image = pygame.image.load("tuiles/M.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
@@ -108,7 +108,7 @@ class MUR(pygame.sprite.Sprite):
 class SOL(pygame.sprite.Sprite):
     def __init__(self, x, y, B):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("S.png").convert_alpha()
+        self.image = pygame.image.load("tuiles/S.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y 
@@ -121,7 +121,7 @@ class SOL(pygame.sprite.Sprite):
 class BOX(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("C.png").convert_alpha()
+        self.image = pygame.image.load("tuiles/C.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
@@ -135,7 +135,7 @@ class BOX(pygame.sprite.Sprite):
 class TUI(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("C.png").convert_alpha()
+        self.image = pygame.image.load("tuiles/C.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
         self.rect = self.image.get_rect()
         self.rect.y = y
@@ -149,12 +149,12 @@ class Sol_line(pygame.sprite.Sprite):
     def __init__(self, x, y, angle, type):
         pygame.sprite.Sprite.__init__(self)
         if type == "S":
-            self.image = pygame.image.load("S.png").convert_alpha()
+            self.image = pygame.image.load("tuiles/S.png").convert_alpha()
             self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
             self.image = pygame.transform.rotate(self.image,angle)
             self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
         elif type == "T":
-            self.image = pygame.image.load("T.png").convert_alpha()
+            self.image = pygame.image.load("tuiles/T.png").convert_alpha()
             self.rect = self.image.get_rect(center=(self.image.get_width()/2,self.image.get_height()/2))
         self.rect.y = y
         self.rect.x = x
@@ -397,22 +397,32 @@ class perso(pygame.sprite.Sprite, vivant):
 
 
 class btn:
-    def __init__(self,couleur,text,suite,place,taille):
-        POLICE_ARIAL = pygame.font.SysFont("Arial",taille,1,1)
-        self.text = POLICE_ARIAL.render(text,1,couleur)
+    def __init__(self,couleur,text,suite,taille):
+        self.place = [0,0]
+        font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
+        self.text = font.render(text,1,couleur)
         self.text_rect = self.text.get_rect()
-        self.rect = pygame.Rect(place[0], place[1], self.text_rect[2]+taille/2*2, self.text_rect[3]+taille/3*2)
+        self.rect = pygame.Rect(self.place[0], self.place[1], self.text_rect[2]+taille/2*2, self.text_rect[3]+taille/3*2)
+        self.rect_rect = pygame.Rect(0,0, self.text_rect[2]+taille/2*2, self.text_rect[3]+taille/3*2)
+        self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         self.taille = taille
-        self.place = place
         self.suite = suite
-    def draw(self,surface,clic):
+    def draw(self,surface,place,clic):
+        self.place = place
+        self.rect = pygame.Rect(self.place[0], self.place[1], self.text_rect[2]+self.taille/2*2, self.text_rect[3]+self.taille/3*2)
+        self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         point = pygame.mouse.get_pos()
         collide = self.rect.collidepoint(point)
         if collide:
-            color = (0,115,229)
+            color = (0,115,229,255)
             if clic == 1:
                 self.suite()
         else:
-            color = (200,200,200)
-        draw_rounded_rect(surface, color, self.rect, self.taille/1.2)
-        surface.blit(self.text,(self.place[0]+self.taille/2,self.place[1]+self.taille/3))
+            color = (200,200,200,200)
+        draw_rounded_rect(self.surface, color, self.rect_rect, self.taille/1.2)
+        self.surface.blit(self.text,(self.taille/2,self.taille/3))
+        surface.blit(self.surface,(self.rect[0],self.rect[1]))
+    def get_width(self):
+        return self.rect[2]
+    def get_height(self):
+        return self.rect[3]

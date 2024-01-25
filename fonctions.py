@@ -1,5 +1,5 @@
 import pygame
-from tkinter import messagebox
+#from tk import messagebox
 import pygame_gui
 import subprocess
 
@@ -7,8 +7,9 @@ pygame.init()
 
 # fonction pour écrire
 def ecrire(surface,couleur,text,place,taille):
-    POLICE_ARIAL = pygame.font.SysFont("Arial",taille,1,1)
-    text = POLICE_ARIAL.render(text,1,couleur)
+    font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
+    #POLICE_ARIAL = pygame.font.SysFont("Arial",taille,1,1)
+    text = font.render(text,1,couleur)
     text_rect = text.get_rect()
     surface.blit(text,place)
 
@@ -33,3 +34,6 @@ def quitter():
     else:
         print("Vous avez annulé la fermeture de l'application.")
         # Ajoutez ici le code pour gérer l'annulation de la fermeture
+
+def change_window(w,h,fond):
+    fond = pygame.transform.scale(fond, (w,w*fond.get_height()/fond.get_width()))
