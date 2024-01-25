@@ -335,12 +335,6 @@ while continuer:
     for p in range(len(lp)-1):
         pygame.draw.line(ecran,ROUGE,(lp[p][0],lp[p][1]),(lp[p+1][0],lp[p+1][1]))
 
-    
-
-
-
-
-    ecran.blit(text_surface,(w/2,h/2))
 
     clock.tick(personnag.frame_rate)
 
