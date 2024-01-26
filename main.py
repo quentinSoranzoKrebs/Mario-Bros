@@ -121,7 +121,6 @@ for l in range(len(lignes)):
             LISTE_GLOBALE_SPRITES.add(_gomb)
         if lines[nb]=="." or lines[nb]=="*":
             ma_liste.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE, lines[nb]])
-            ma_liste2.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE])
 
         XX = XX + 1
         nb+=1
@@ -142,9 +141,6 @@ def custom_sort(item):
 
 # Trier la liste en utilisant la fonction de tri personnalisée
 lp = sorted(ma_liste, key=custom_sort)
-lpp = sorted(ma_liste, key=custom_sort)
-
-lpp1 = sorted(ma_liste2, key=lambda x: x[0])
 
 
 for element in lp:
@@ -311,10 +307,10 @@ while continuer:
     LISTE_AFFICH.update(ecran)
     liste_de_sprites = list(LISTE_point)
     for sprite in VIVANT:
-        sprite.collision(right, left, ecran, lp)
+        sprite.collision(ecran, lp, right, left)
     if personnag.vie > 0:
         personnag.avancer(right, left, space, ecran, elapsed_time, lp)
-        personnag.collision(right, left, ecran, lp)
+        personnag.collision(ecran, lp, right, left)
         ecran.blit(coeur,(0,3))
         ecrire(ecran,NOIR,"x"+str(personnag.vie),(35,0),40)
 
@@ -325,9 +321,8 @@ while continuer:
     CADEAUX.draw(ecran)
     #LISTE_point.update(ecran)
 
-    if personnag.vie == 0:
-        #del personnag
-        POLICE_ARIAL = pygame.font.SysFont("Arial",100,1,1)
+    if personnag.vie < 0:
+        POLICE_ARIAL = pygame.font.SysFont("Arial",100,0,0)
         gameover = POLICE_ARIAL.render("GAMEOVER",1,ROUGE)
         gameover_rect = gameover.get_rect()
         ecran.blit(gameover,(w/2-gameover_rect[2]/2,h/2-gameover_rect[3]/2))

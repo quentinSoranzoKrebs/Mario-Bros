@@ -36,7 +36,7 @@ class vivant():
         self.pente = 0
         self.chute_vitesse = 20
 
-    def collision(self, right, left, ecran, lp):
+    def collision(self, ecran, lp, right=0, left=0):
         self.sol = False
         X_COURANT = self.rect.x
         Y_COURANT = self.rect.y
@@ -51,9 +51,9 @@ class vivant():
                 self.sol = True
                 try:
                     self.pente = (y2-y1)/(x2-x1)
+                    self.rect.y = y1+self.pente*(self.rect.x-x1) - self.rect[3]+5
                 except ZeroDivisionError:
-                    pass
-                self.rect.y = y1+self.pente*(self.rect.x-x1) - 70
+                    self.sol = False
         
         # collision avec les mur
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
@@ -169,6 +169,7 @@ class Sol_line(pygame.sprite.Sprite):
 class CAD(pygame.sprite.Sprite,vivant):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
+        vivant.__init__(self)
 
         self.image = pygame.image.load("champignon.png").convert_alpha()
         #self.image = pygame.transform.scale(self.image, (TUILE_TAILLE,TUILE_TAILLE))
@@ -180,35 +181,14 @@ class CAD(pygame.sprite.Sprite,vivant):
         self.direction = "r"
         self.vie = 1
 
-    def update(self,ecran):
+    def collision(self,ecran, lp, right, left):
+        super().collision(ecran, lp)
         if self.etat:
             if self.direction == "r":
                 self.rect.x -= 8
             else:
                 self.rect.x += 8
 
-            LISTE_COLLISION_SOL = pygame.sprite.spritecollide(self, LISTE_SOLS, False)
-            LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
-
-            for bloc in LISTE_COLLISION_SOL:
-                position_x = bloc.rect.x
-                position_y = bloc.rect.y
-                self.rect.y = position_y-44
-
-            for bloc in LISTE_COLLISION_MUR:
-                position_x = bloc.rect.x
-                position_y = bloc.rect.y
-                if position_x+TUILE_TAILLE < self.rect.x+69 and not position_y > self.rect.y + 40:
-                    self.direction = "l"
-
-                if position_x > self.rect.x and not position_y > self.rect.y + 40:
-                    self.direction = "r"
-
-                if position_y > self.rect.y + 40:
-                    self.rect.y = position_y-44
-
-            if not len(LISTE_COLLISION_SOL) > 0 and not len(LISTE_COLLISION_MUR) > 0:
-                self.rect.y +=20
 
 
 
@@ -257,7 +237,7 @@ class goomba(pygame.sprite.Sprite, vivant):
                 self.image = self.symmetrical_frame
                 self.rect.x +=5
 
-    def collision(self, right, left, ecran, lp):
+    def collision(self, ecran, lp, right, left):
         LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, False)
 
         for bloc in LISTE_COLLISION_MONSTRE:
@@ -269,7 +249,7 @@ class goomba(pygame.sprite.Sprite, vivant):
                     self.rect.y = bloc.rect.y-71
                     
 
-        super().collision(right, left, ecran, lp)
+        super().collision(ecran, lp, right, left)
 
 
 
@@ -323,11 +303,12 @@ class perso(pygame.sprite.Sprite, vivant):
         #print("self.rect: ",self.rect)
 
     def avancer(self, right, left, space, ecran, time, lp):
+        w,h = pygame.display.get_surface().get_size()
 
         if self.pente > 0:
-            self.avance_gauche = self.pente*10
+            self.avance_gauche = 10-self.pente*5
         elif self.pente < 0:
-            self.avance_droite = self.pente*10
+            self.avance_droite = 10+self.pente*5
         else:
             self.avance_gauche = 10
             self.avance_droite = 10
@@ -363,6 +344,11 @@ class perso(pygame.sprite.Sprite, vivant):
             elif left==1 and self.ldirect:
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 self.image = self.symmetrical_frame
+
+
+        if self.rect.y > h:
+            self.vie = (-1)
+            
             
     def collision(self, right, left, ecran, lp):
         super().collision(right, left, ecran, lp)
@@ -393,9 +379,11 @@ class perso(pygame.sprite.Sprite, vivant):
                     self.rect.y=position_y+TUILE_TAILLE+10
                     _cad = CAD(position_x,position_y-100)
                     CADEAUX.add(_cad)
+                    VIVANT.add(_cad)
                     #LISTE_AFFICH.add(_cad)
                     LISTE_GLOBALE_SPRITES.add(_cad)
                     #print("cadeau")
+
 
 
 
