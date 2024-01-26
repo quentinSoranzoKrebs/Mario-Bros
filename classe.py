@@ -348,8 +348,7 @@ class perso(pygame.sprite.Sprite, vivant):
 
         if self.rect.y > h:
             self.vie = (-1)
-            
-            
+                       
     def collision(self, right, left, ecran, lp):
         super().collision(right, left, ecran, lp)
 
@@ -365,7 +364,19 @@ class perso(pygame.sprite.Sprite, vivant):
                     self.saut = 1
                     self.chute_vitesse = -5
 
-                self.vie -= 1
+                elif position_x<self.rect.x and not position_y>self.rect.y+74/2:
+                    self.vie -= 1
+                    self.rect.x+=50
+                    self.rect.y-=50
+                    sleep(0.3)
+                elif position_x>self.rect.x and not position_y>self.rect.y+74/2:
+                    self.vie -= 1
+                    self.rect.x-=50
+                    self.rect.y-=50
+                    sleep(0.3)
+
+                else:
+                    self.vie -= 1
 
 
         LISTE_COLLISION_BOX = pygame.sprite.spritecollide(self, LISTE_BOX, False)
@@ -383,6 +394,10 @@ class perso(pygame.sprite.Sprite, vivant):
                     #LISTE_AFFICH.add(_cad)
                     LISTE_GLOBALE_SPRITES.add(_cad)
                     #print("cadeau")
+
+        LISTE_COLLISION_BOX = pygame.sprite.spritecollide(self, CADEAUX, True)
+        if len(LISTE_COLLISION_BOX) > 0:
+            self.vie += 1
 
 
 
