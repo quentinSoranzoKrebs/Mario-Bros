@@ -20,4 +20,4 @@ pip3 install -r requirements.txt
 python3 main.py
 ```
 
-<img>
+![Texte alternatif](champignon.png)
