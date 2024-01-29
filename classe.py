@@ -22,8 +22,6 @@ liste_point = pygame.sprite.Group()
 VIVANT = pygame.sprite.Group()
 lp = ()
 ma_liste = []
-ma_liste2 = []
-
 
 
 
@@ -51,9 +49,18 @@ class vivant():
                 self.sol = True
                 try:
                     self.pente = (y2-y1)/(x2-x1)
-                    self.rect.y = y1+self.pente*(self.rect.x-x1) - self.rect[3]+5
+                    if self.pente < 0:
+                        if right == 1:
+                            self.rect.y = y1+((self.rect[2]+self.rect.x)-x1)*self.pente - self.rect[3]+13
+                        else:
+                            self.rect.y = y1+self.pente*((self.rect[2]+self.rect.x)-x1) - self.rect[3]+13
+                    else:
+                        if right == 1:
+                            self.rect.y = y1+self.pente*((self.rect.x)-x1) - self.rect[3]+13
+                        else:
+                            self.rect.y = y1+self.pente*((self.rect.x)-x1) - self.rect[3]+1
                 except ZeroDivisionError:
-                    self.sol = False
+                    self.avance_droite = 0
         
         # collision avec les mur
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
@@ -61,26 +68,37 @@ class vivant():
         for bloc in LISTE_COLLISION_MUR:
             position_x = bloc.rect.x
             position_y = bloc.rect.y
-            if position_y>self.rect.y+74/2:
-                self.rect.y = position_y-73
+            if position_y>self.rect.y+self.rect[3]/2:
+                self.rect.y = position_y-self.rect[3]+3
                 self.saut=0
+                self.sol = True
 
-            if position_y+45<self.rect.y+70:
+
+            if position_y+bloc.rect[3]<self.rect.y+self.rect[3]/2:
                 bloc.rect.y = bloc.rect.y - 10
                 self.rect.y = Y_COURANT
-                self.chute_vitesse = 40
+                self.chute_vitesse = 20
+
+            if position_x<self.rect.x+self.rect[2] and not position_y>self.rect.y+self.rect[3]/2:
+                self.collision_droite()
+            if position_x>self.rect.x and not position_y>self.rect.y+self.rect[3]/2:
+                self.collision_gauche()
+                
+
+        LISTE_COLLISION_BOX = pygame.sprite.spritecollide(self, LISTE_BOX, False)
+        for bloc in LISTE_COLLISION_BOX:
+            position_x = bloc.rect.x
+            position_y = bloc.rect.y
+            if position_y>self.rect.y+self.rect[3]/2:
+                self.rect.y = position_y-self.rect[3]+3
+                self.saut=0
+                self.sol = True            
 
 
-            if position_x<self.rect.x and not position_y>self.rect.y+74/2:
-                self.avance_gauche = 0
-            if position_x>self.rect.x and not position_y>self.rect.y+74/2:
-                self.avance_droite = 0
 
-        if len(LISTE_COLLISION_MUR) > 0 :
-            self.sol = True
 
         # aucune collision
-        if not self.sol:    
+        if not self.sol:
             self.saut=1
             self.chute_vitesse += 1
             self.rect.y = self.rect.y + self.chute_vitesse
@@ -91,7 +109,15 @@ class vivant():
 
 
 
-class MUR(pygame.sprite.Sprite):
+class tuile():
+    def __init__(self):
+        pass
+    def resize(self,width,height):
+        self.image = pygame.transform.scale(self.image, (width,height))
+
+
+
+class MUR(pygame.sprite.Sprite,tuile):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load("tuiles/M.png").convert_alpha()
@@ -105,6 +131,9 @@ class MUR(pygame.sprite.Sprite):
         self.vie = 1
     def update(self,ecran):
         self.rect.y = self.origine_y
+    def resize(self,width,height):
+        self.image = pygame.image.load("tuiles/M.png").convert_alpha()
+        super().resize(width,height)
         
 
 
@@ -129,9 +158,13 @@ class BOX(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.y = y
         self.rect.x = x
+        self.origine_y = y
+        self.origine_x = x
         self.etat = True
         self.vie = 1
         #print("ok")
+    def update(self,ecran):
+        self.rect.y = self.origine_y
 
 
 
@@ -181,13 +214,16 @@ class CAD(pygame.sprite.Sprite,vivant):
         self.direction = "r"
         self.vie = 1
 
-    def collision(self,ecran, lp, right, left):
-        super().collision(ecran, lp)
+    def update(self,ecran):
         if self.etat:
             if self.direction == "r":
                 self.rect.x -= 8
             else:
                 self.rect.x += 8
+
+    def collision(self,ecran, lp, right, left):
+        super().collision(ecran, lp, right, left)
+
 
 
 
@@ -259,13 +295,13 @@ class perso(pygame.sprite.Sprite, vivant):
         pygame.sprite.Sprite.__init__(self)
         vivant.__init__(self)
 
-        gif_path = 'mario2.gif'
+        gif_path = 'mario3.gif'
 
         self.imge = imageio.get_reader(gif_path)
         self.img_stabler = pygame.image.load("stabler1.png").convert_alpha()
-        self.img_stabler = pygame.transform.scale(self.img_stabler, (75,75))
+        #self.img_stabler = pygame.transform.scale(self.img_stabler, (75,75))
         self.img_stablel = pygame.image.load("stablel1.png").convert_alpha()
-        self.img_stablel = pygame.transform.scale(self.img_stablel, (75,75))
+        #self.img_stablel = pygame.transform.scale(self.img_stablel, (75,75))
 
 
         first_frame = self.imge.get_data(0)
@@ -322,7 +358,6 @@ class perso(pygame.sprite.Sprite, vivant):
         self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
 
         if self.saut == 1:
-            #self.rect.y -= self.saut_vitesse
             self.current_frame = 1
             if self.direction == "l":
                 self.symmetrical_frame = pygame.transform.flip(self.frames[self.current_frame], True, False)
@@ -350,10 +385,12 @@ class perso(pygame.sprite.Sprite, vivant):
             self.vie = (-1)
                        
     def collision(self, right, left, ecran, lp):
+        X_COURANT = self.rect.x
+        Y_COURANT = self.rect.y
         super().collision(right, left, ecran, lp)
 
-        LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, False)
 
+        LISTE_COLLISION_MONSTRE = pygame.sprite.spritecollide(self, LISTE_GOOMBA, False)
         for bloc in LISTE_COLLISION_MONSTRE:
             position_x = bloc.rect.x
             position_y = bloc.rect.y
@@ -380,23 +417,24 @@ class perso(pygame.sprite.Sprite, vivant):
 
 
         LISTE_COLLISION_BOX = pygame.sprite.spritecollide(self, LISTE_BOX, False)
-        if len(LISTE_COLLISION_BOX) > 0:
-            for bloc in LISTE_COLLISION_BOX:
-                position_x = bloc.rect.x
-                position_y = bloc.rect.y
-                self.saut_vitesse = 0
-                if position_y+45<self.rect.y+70 and bloc.vie == 1:
-                    bloc.vie = 0
-                    self.rect.y=position_y+TUILE_TAILLE+10
-                    _cad = CAD(position_x,position_y-100)
-                    CADEAUX.add(_cad)
-                    VIVANT.add(_cad)
-                    #LISTE_AFFICH.add(_cad)
-                    LISTE_GLOBALE_SPRITES.add(_cad)
-                    #print("cadeau")
+        for bloc in LISTE_COLLISION_BOX:
+            position_x = bloc.rect.x
+            position_y = bloc.rect.y
+            if position_y+45<self.rect.y+70 and bloc.vie == 1:
+                self.rect.y=position_y+TUILE_TAILLE+10
+                bloc.rect.y = bloc.rect.y - 10
+                _cad = CAD(position_x,position_y-TUILE_TAILLE)
+                CADEAUX.add(_cad)
+                VIVANT.add(_cad)
+                LISTE_GLOBALE_SPRITES.add(_cad)
+                self.rect.y = Y_COURANT
+                self.chute_vitesse = 20
 
-        LISTE_COLLISION_BOX = pygame.sprite.spritecollide(self, CADEAUX, True)
-        if len(LISTE_COLLISION_BOX) > 0:
+
+                
+
+        LISTE_COLLISION_CAD = pygame.sprite.spritecollide(self, CADEAUX, True)
+        if len(LISTE_COLLISION_CAD) > 0:
             self.vie += 1
 
 
@@ -404,6 +442,7 @@ class perso(pygame.sprite.Sprite, vivant):
 
 class btn:
     def __init__(self,couleur,text,suite,taille):
+
         self.place = [0,0]
         font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
         self.text = font.render(text,1,couleur)
@@ -413,6 +452,7 @@ class btn:
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         self.taille = taille
         self.suite = suite
+    
     def draw(self,surface,place,clic):
         self.place = place
         self.rect = pygame.Rect(self.place[0], self.place[1], self.text_rect[2]+self.taille/2*2, self.text_rect[3]+self.taille/3*2)
@@ -428,7 +468,9 @@ class btn:
         draw_rounded_rect(self.surface, color, self.rect_rect, self.taille/1.2)
         self.surface.blit(self.text,(self.taille/2,self.taille/3))
         surface.blit(self.surface,(self.rect[0],self.rect[1]))
+    
     def get_width(self):
         return self.rect[2]
+    
     def get_height(self):
         return self.rect[3]

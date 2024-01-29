@@ -6,6 +6,7 @@ from fonctions import *
 from classe import *
 from time import sleep
 import pygame_gui
+from math import *
 
 
 
@@ -131,14 +132,6 @@ for l in range(len(lignes)):
 def custom_sort(item):
     return (item[0], item[2] != '*')
 
-# Fonction de tri personnalisée
-'''def custom_sort2(item):
-    it = item[2]
-    del item[2]
-    return (item[0], it != '*')'''
-
-
-
 # Trier la liste en utilisant la fonction de tri personnalisée
 lp = sorted(ma_liste, key=custom_sort)
 
@@ -146,8 +139,8 @@ lp = sorted(ma_liste, key=custom_sort)
 for element in lp:
     del element[2]
 
-
 print(lp)
+
 
 
 w,h = pygame.display.get_surface().get_size()
@@ -155,25 +148,43 @@ w,h = pygame.display.get_surface().get_size()
 for i in range(len(lp)-1):
     x1,y1 = lp[i][0],lp[i][1]
     x2,y2 = lp[i+1][0],lp[i+1][1]
-    if (x2-x1) == 0:
-        pente = 1
-    else:
+    try:
         pente = (y2-y1)/(x2-x1)
+    except ZeroDivisionError:
+        pente = 222
     coté1 = lp[i+1][0]-lp[i][0]
     coté2 = lp[i+1][1]-lp[i][1]
     coté3 = math.sqrt(coté1*coté1+coté2*coté2)
     angle = math.degrees(math.atan2(coté1, coté2))-90
     test = Sol_line(0,0,angle,"S")
-    larg = test.rect[2]
     rect = test.image.get_rect()
-    for n in range(int(coté3/TUILE_TAILLE)):
-        x = x1+n*TUILE_TAILLE
-        y = y1+(x1 +n*TUILE_TAILLE-x1)*pente  #-math.sqrt(TUILE_TAILLE*TUILE_TAILLE-.rect[2]*)
-        if pente > 0:
-            _sol = Sol_line(x,y-rect[3]+18*2,angle,"S")
-        else:
-            _sol = Sol_line(x,y-rect[3]+18,angle,"S")
+    C = 90
+    B = angle
+    A = 180 - 18 - 90
+    AB = 18
+    AC = AB*sin(A)
+    print(AC)
+    BC = AB*cos(A)
+    for n in range(round(coté3/TUILE_TAILLE)):
+        if pente < 0:
+            x = x1+n*(rect[2]-AC)
+            y = y1+(x1 +n*(rect[2]-AC)-x1)*pente-rect[3]-BC
+            _sol = Sol_line(x,y,angle,"S")
+        elif pente >= 0 and not pente == 222:
+            x = x1+n*TUILE_TAILLE
+            y = y1+(x1 +n*TUILE_TAILLE-x1)*pente
+            _sol = Sol_line(x,y,angle,"S")
 
+        elif pente == 222:
+            x = x1
+            if y1 > y2:
+                y = y2+n*TUILE_TAILLE
+            else:
+                y = y1+n*TUILE_TAILLE
+                x = x1-rect[2]
+            _sol = Sol_line(x,y,angle,"S")
+
+        
         LISTE_GLOBALE_SPRITES.add(_sol)
 
 lp.insert(0, [0,h])
@@ -208,11 +219,11 @@ def affich_map(av):
 
     
     if left == 1:
-        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 74, 74)
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 100, 100)
     if right == 1:
-        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 74, 74)
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 100, 100)
     else:
-        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 30, 74)
+        personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 30, 100)
 
 personnag = perso()
 VIVANT.add(personnag)
@@ -304,7 +315,7 @@ while continuer:
     ecran.blit(fond,(fondx,0))
     affich_map(personnag.av)
     pygame.draw.polygon(ecran, (227, 153, 76), lp)
-    LISTE_AFFICH.update(ecran)
+    LISTE_GLOBALE_SPRITES.update(ecran)
     liste_de_sprites = list(LISTE_point)
     for sprite in VIVANT:
         sprite.collision(ecran, lp, right, left)
