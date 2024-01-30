@@ -21,4 +21,4 @@ python3 main.py
 ```
 
 
-![Screenshot](screenshot/Screenshot1.png)
+![Screenshot](screenshot/screenshot2.png)

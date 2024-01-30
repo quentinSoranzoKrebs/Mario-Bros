@@ -248,6 +248,8 @@ while continuer:
             
 
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_s:
+                screenshot(ecran)
             if event.key == pygame.K_LEFT:
                 left=1
             if event.key == pygame.K_RIGHT:
@@ -308,8 +310,6 @@ while continuer:
     if pygame.time.get_ticks() - start_time > 180 and space == 1:
         space = 0
         elapsed_time = 170
-
-    #symmetrical_frame = pygame.transform.flip(frames[current_frame], True, False)
 
 
     ecran.blit(fond,(fondx,0))
