@@ -44,6 +44,7 @@ hello_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 275)
 # Charger l'icône
 icone = pygame.image.load("ico_edit.png")
 
+
 # Définir l'icône de la fenêtre
 pygame.display.set_icon(icone)
 
@@ -54,7 +55,7 @@ background.fill(NOIR)
 continuer=True
 clock = pygame.time.Clock()
 
-save = btn(BLANC,"Sauvegarder",quitter,round(w/1300*50))
+save = btn("Sauvegarder",quitter,round(w/1300*50))
 
 _mur = MUR(w-w/8,h/2)
 LISTE_GLOBALE_SPRITES.add(_mur)
@@ -74,7 +75,7 @@ while continuer:
         if event.type == pygame.QUIT:
             quitter()
         if event.type == pygame.VIDEORESIZE:
-            save = btn(BLANC,"Sauvegarder",quitter,round(w/1300*50))
+            save = btn("Sauvegarder",quitter,round(w/1300*50))
             TUILE_TAILLE = h/14
             for sprite in LISTE_GLOBALE_SPRITES:
                 

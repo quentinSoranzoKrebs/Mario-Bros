@@ -60,7 +60,10 @@ class vivant():
                         else:
                             self.rect.y = y1+self.pente*((self.rect.x)-x1) - self.rect[3]+1
                 except ZeroDivisionError:
-                    self.avance_droite = 0
+                    if self.direction == "r":
+                        self.avance_droite = 0
+                    if self.direction == "l":
+                        self.avance_gauche = 0
         
         # collision avec les mur
         LISTE_COLLISION_MUR = pygame.sprite.spritecollide(self, LISTE_MURS, False)
@@ -107,6 +110,11 @@ class vivant():
         elif self.sol:
             self.chute_vitesse = 0
 
+    def collision_droite(self):
+        pass
+
+    def collision_gauche(self):
+        pass
 
 
 class tuile():
@@ -114,7 +122,6 @@ class tuile():
         pass
     def resize(self,width,height):
         self.image = pygame.transform.scale(self.image, (width,height))
-
 
 
 class MUR(pygame.sprite.Sprite,tuile):
@@ -136,7 +143,6 @@ class MUR(pygame.sprite.Sprite,tuile):
         super().resize(width,height)
         
 
-
 class SOL(pygame.sprite.Sprite):
     def __init__(self, x, y, B):
         pygame.sprite.Sprite.__init__(self)
@@ -147,7 +153,6 @@ class SOL(pygame.sprite.Sprite):
         self.rect.x = x
         self.etat = True
         self.vie = 1
-
 
 
 class BOX(pygame.sprite.Sprite):
@@ -167,7 +172,6 @@ class BOX(pygame.sprite.Sprite):
         self.rect.y = self.origine_y
 
 
-
 class TUI(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -178,7 +182,6 @@ class TUI(pygame.sprite.Sprite):
         self.rect.x = x
         self.etat = True
         self.vie = 1
-
 
 
 class Sol_line(pygame.sprite.Sprite):
@@ -196,7 +199,6 @@ class Sol_line(pygame.sprite.Sprite):
         self.rect.x = x
         self.etat = True
         self.vie = 1
-
 
 
 class CAD(pygame.sprite.Sprite,vivant):
@@ -223,9 +225,6 @@ class CAD(pygame.sprite.Sprite,vivant):
 
     def collision(self,ecran, lp, right, left):
         super().collision(ecran, lp, right, left)
-
-
-
 
 
 class goomba(pygame.sprite.Sprite, vivant):
@@ -286,8 +285,6 @@ class goomba(pygame.sprite.Sprite, vivant):
                     
 
         super().collision(ecran, lp, right, left)
-
-
 
 
 class perso(pygame.sprite.Sprite, vivant):
@@ -437,25 +434,36 @@ class perso(pygame.sprite.Sprite, vivant):
         if len(LISTE_COLLISION_CAD) > 0:
             self.vie += 1
 
+    def collision_droite(self):
+        self.avance_droite = 0
 
-
+    def collision_gauche(self):
+        self.avance_gauche = 0
+        
 
 class btn:
-    def __init__(self,couleur,text,suite,taille):
-
+    def __init__(self,element,suite,taille):
         self.place = [0,0]
-        font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
-        self.text = font.render(text,1,couleur)
-        self.text_rect = self.text.get_rect()
-        self.rect = pygame.Rect(self.place[0], self.place[1], self.text_rect[2]+taille/2*2, self.text_rect[3]+taille/3*2)
-        self.rect_rect = pygame.Rect(0,0, self.text_rect[2]+taille/2*2, self.text_rect[3]+taille/3*2)
+        self.couleur = BLANC
+        if isinstance(element, pygame.Surface):
+            self.element = element
+            self.element = pygame.transform.scale(element, (taille,taille))
+            print(taille)
+            self.element_rect = self.element.get_rect()
+        else:
+            self.text = element
+            font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
+            self.element = font.render(element,1,self.couleur)
+            self.element_rect = self.element.get_rect()
+        self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+taille/2*2, self.element_rect[3]+taille/3*2)
+        self.rect_rect = pygame.Rect(0,0, self.element_rect[2]+taille/2*2, self.element_rect[3]+taille/3*2)
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         self.taille = taille
         self.suite = suite
     
     def draw(self,surface,place,clic):
         self.place = place
-        self.rect = pygame.Rect(self.place[0], self.place[1], self.text_rect[2]+self.taille/2*2, self.text_rect[3]+self.taille/3*2)
+        self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+self.taille/2*2, self.element_rect[3]+self.taille/3*2)
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         point = pygame.mouse.get_pos()
         collide = self.rect.collidepoint(point)
@@ -465,10 +473,17 @@ class btn:
                 self.suite()
         else:
             color = (200,200,200,200)
-        draw_rounded_rect(self.surface, color, self.rect_rect, self.taille/1.2)
-        self.surface.blit(self.text,(self.taille/2,self.taille/3))
+        draw_rounded_rect(self.surface, color, self.rect_rect, self.rect_rect[3]/4)
+        self.surface.blit(self.element,(self.taille/2,self.taille/3))
         surface.blit(self.surface,(self.rect[0],self.rect[1]))
     
+    def color(self,couleur):
+        self.couleur = couleur
+        print(couleur)
+        font = pygame.font.Font("calibri-font/calibri-regular.ttf", self.taille)
+        self.element = font.render(self.text,1,self.couleur)
+        self.element_rect = self.element.get_rect()
+
     def get_width(self):
         return self.rect[2]
     

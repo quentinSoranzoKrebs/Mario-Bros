@@ -59,17 +59,20 @@ yblocs = 0
 colision_yperso = True
 colision_xperso = True
 
+avencement = 0
+
 boutons = []
 
-ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
+ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE, display=1)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
 
 # Charger l'icône
-icone = pygame.image.load("ico.png")
+icon = pygame.image.load("ico.png")
+
 
 # Définir l'icône de la fenêtre
-pygame.display.set_icon(icone)
+pygame.display.set_icon(icon)
 
 coeur = pygame.image.load("coeur.png").convert_alpha()
 coeur = pygame.transform.scale(coeur, (30,30))
@@ -85,6 +88,7 @@ background.fill(NOIR)
 
 
 fond = pygame.image.load("fond.png").convert_alpha()
+setting = pygame.image.load("tuiles/parametres.png").convert_alpha()
 wt = round(h/(h-fond.get_height())*w)
 print(wt)
 fond = pygame.transform.scale(fond, (wt,h))
@@ -145,6 +149,12 @@ print(lp)
 
 w,h = pygame.display.get_surface().get_size()
 
+surface_tuiles = pygame.Surface((w,5000), pygame.SRCALPHA)
+
+surfaces = []
+
+sol = pygame.image.load("tuiles/S.png").convert_alpha()
+
 for i in range(len(lp)-1):
     x1,y1 = lp[i][0],lp[i][1]
     x2,y2 = lp[i+1][0],lp[i+1][1]
@@ -156,42 +166,35 @@ for i in range(len(lp)-1):
     coté2 = lp[i+1][1]-lp[i][1]
     coté3 = math.sqrt(coté1*coté1+coté2*coté2)
     angle = math.degrees(math.atan2(coté1, coté2))-90
-    test = Sol_line(0,0,angle,"S")
-    rect = test.image.get_rect()
-    C = 90
-    B = angle
-    A = 180 - 18 - 90
-    AB = 18
-    AC = AB*sin(A)
-    print(AC)
-    BC = AB*cos(A)
+    surfaces.append([0,0,0])
+    surfaces[i][0] = pygame.Surface((coté3,TUILE_TAILLE), pygame.SRCALPHA)
     for n in range(round(coté3/TUILE_TAILLE)):
-        if pente < 0:
-            x = x1+n*(rect[2]-AC)
-            y = y1+(x1 +n*(rect[2]-AC)-x1)*pente-rect[3]-BC
-            _sol = Sol_line(x,y,angle,"S")
-        elif pente >= 0 and not pente == 222:
-            x = x1+n*TUILE_TAILLE
-            y = y1+(x1 +n*TUILE_TAILLE-x1)*pente
-            _sol = Sol_line(x,y,angle,"S")
+        surfaces[i][0].blit(sol,(n*TUILE_TAILLE,0))
 
-        elif pente == 222:
-            x = x1
-            if y1 > y2:
-                y = y2+n*TUILE_TAILLE
-            else:
-                y = y1+n*TUILE_TAILLE
-                x = x1-rect[2]
-            _sol = Sol_line(x,y,angle,"S")
+    surfaces[i][0] = pygame.transform.rotate(surfaces[i][0], angle)
+    surfaces[i][1],surfaces[i][2] = x1,y1
+    if pente > 0:
+        surfaces[i][1],surfaces[i][2] = x1,y1
+    elif pente < 0:
+        surfaces[i][1],surfaces[i][2] = x1,y1+(y2-y1)
+
+
 
         
-        LISTE_GLOBALE_SPRITES.add(_sol)
-
 lp.insert(0, [0,h])
 end = lp[len(lp)-1][0]
 lp.insert(0, [end,h])
 
 def affich_map(av):
+    for element in surfaces:
+        if left == 1:
+            personnag.direction = "l"
+            element[1] += personnag.avance_gauche*1.4
+                
+        if right ==1:
+            personnag.direction = "r"
+            element[1] -= personnag.avance_droite*1.4
+    
     LISTE_AFFICH.empty()
     if personnag.vie > 0:
         LISTE_AFFICH.add(personnag)
@@ -233,7 +236,16 @@ LISTE_AFFICH.add(personnag)
 continuer=True
 clock = pygame.time.Clock()
 
-Quitter = btn(BLANC,"Quitter",quitter,50)
+Quitter = btn("Quitter",quitter,50)
+ok = btn(setting,quitter,50)
+
+
+rect_test = pygame.Rect(w/2,h/2,200,100)
+surface_test = pygame.Surface((rect_test[2],rect_test[3]), pygame.SRCALPHA)
+
+surface_test.blit(coeur,(0,0))
+
+surface_test =  pygame.transform.rotate(surface_test, 90)
 
 while continuer:
     time_delta = clock.tick(60) / 1000.0
@@ -245,7 +257,10 @@ while continuer:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quitter()
-            
+        if event.type == pygame.VIDEORESIZE:
+            lp[0] = 0,h
+            end = lp[len(lp)-1][0]
+            lp[len(lp)-1] = end,h
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
@@ -255,6 +270,7 @@ while continuer:
             if event.key == pygame.K_RIGHT:
                 right=1
             if event.key == pygame.K_SPACE:
+                print(Quitter.get_width())
                 space=1
                 start_time = pygame.time.get_ticks()
 
@@ -330,7 +346,9 @@ while continuer:
 
     LISTE_AFFICH.draw(ecran)
     CADEAUX.draw(ecran)
-    #LISTE_point.update(ecran)
+    for i in range(len(surfaces)):
+        ecran.blit(surfaces[i][0],(surfaces[i][1],surfaces[i][2]))
+
 
     if personnag.vie < 0:
         POLICE_ARIAL = pygame.font.SysFont("Arial",100,0,0)
@@ -347,6 +365,7 @@ while continuer:
     #bouton(ecran,BLANC,"salut Machin",dire_bonjour,(50,50),50)
 
     Quitter.draw(ecran,[w-Quitter.get_width()-5,5],clic)
+    ok.draw(ecran,[w/2-ok.get_width(),h/2-ok.get_height()],clic)
 
     pygame.display.flip()
 
