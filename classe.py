@@ -227,6 +227,10 @@ class CAD(pygame.sprite.Sprite,vivant):
         super().collision(ecran, lp, right, left)
 
 
+class END(pygame.sprite.Sprite):
+    pass
+
+
 class goomba(pygame.sprite.Sprite, vivant):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)

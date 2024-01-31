@@ -126,6 +126,9 @@ for l in range(len(lignes)):
             LISTE_GLOBALE_SPRITES.add(_gomb)
         if lines[nb]=="." or lines[nb]=="*":
             ma_liste.append([XX*TUILE_TAILLE, YY*TUILE_TAILLE, lines[nb]])
+        if lines[nb]=="|":
+            pass
+
 
         XX = XX + 1
         nb+=1
@@ -252,12 +255,13 @@ while continuer:
     
     w,h = pygame.display.get_surface().get_size()
 
-
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quitter()
         if event.type == pygame.VIDEORESIZE:
+            change_window(w,h,fond)
+            personnag.rect.x = w/2 - personnag.rect[2]/2
+            
             lp[0] = 0,h
             end = lp[len(lp)-1][0]
             lp[len(lp)-1] = end,h
