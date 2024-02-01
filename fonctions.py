@@ -51,12 +51,21 @@ def quitter():
         else:
             response = False
     elif system == "Linux":
-        # Afficher une boîte de dialogue Zenity sur Linux (pour les bureaux basés sur GTK)
-        response = subprocess.run(['zenity', '--question', '--text', 'Voulez-vous vraiment quitter?', '--ok-label=Quitter', '--cancel-label=Annuler'], capture_output=True, text=True)
+        import os
+        desktop = os.environ.get('XDG_CURRENT_DESKTOP')
+        print(desktop)
+        if desktop == 'ubuntu:GNOME':
+            # Afficher une boîte de dialogue Zenity sur Linux (pour les bureaux basés sur GTK)
+            response = subprocess.run(['zenity', '--question', '--text', 'Voulez-vous vraiment quitter?', '--ok-label=Quitter', '--cancel-label=Annuler'], capture_output=True, text=True)
+        if desktop == 'KDE':
+            response = subprocess.run(['kdialog', '--title', 'Question', '--yesno', 'Voulez-vous vraiment quitter?', '--yes-label', "Quitter", '--no-label', "Annuler"], capture_output=True, text=True)
+            
         if response.returncode == 0:
             response = True
         else:
             response = False
+
+
 
     if response:
         pygame.quit()
@@ -71,4 +80,5 @@ def screenshot(surface):
     pygame.image.save(surface, "screenshot/screenshot"+str(now2)+".png")
 
 def change_window(w,h,fond):
-    fond = pygame.transform.scale(fond, (w,w*fond.get_height()/fond.get_width()))
+    fond = pygame.transform.scale(fond, (w,h))
+    print("ici")

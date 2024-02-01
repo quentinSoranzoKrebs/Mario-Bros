@@ -63,7 +63,7 @@ avencement = 0
 
 boutons = []
 
-ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE, display=1)
+ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE, display=0)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
 
@@ -89,9 +89,7 @@ background.fill(NOIR)
 
 fond = pygame.image.load("fond.png").convert_alpha()
 setting = pygame.image.load("tuiles/parametres.png").convert_alpha()
-wt = round(h/(h-fond.get_height())*w)
-print(wt)
-fond = pygame.transform.scale(fond, (wt,h))
+fond = pygame.transform.scale(fond, (w,h))
 
 
 # Ouvrir le fichier en mode lecture
@@ -240,15 +238,8 @@ continuer=True
 clock = pygame.time.Clock()
 
 Quitter = btn("Quitter",quitter,50)
-ok = btn(setting,quitter,50)
+Setting = btn(setting,quitter,50)
 
-
-rect_test = pygame.Rect(w/2,h/2,200,100)
-surface_test = pygame.Surface((rect_test[2],rect_test[3]), pygame.SRCALPHA)
-
-surface_test.blit(coeur,(0,0))
-
-surface_test =  pygame.transform.rotate(surface_test, 90)
 
 while continuer:
     time_delta = clock.tick(60) / 1000.0
@@ -259,12 +250,12 @@ while continuer:
         if event.type == pygame.QUIT:
             quitter()
         if event.type == pygame.VIDEORESIZE:
-            change_window(w,h,fond)
+            fond = pygame.transform.scale(fond, (h/607*3000,h))
+            print(h/607*w,w)
             personnag.rect.x = w/2 - personnag.rect[2]/2
-            
-            lp[0] = 0,h
+            lp[0] = [0,h]
             end = lp[len(lp)-1][0]
-            lp[len(lp)-1] = end,h
+            lp[len(lp)-1] = [end,h]
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
@@ -336,7 +327,6 @@ while continuer:
     affich_map(personnag.av)
     pygame.draw.polygon(ecran, (227, 153, 76), lp)
     LISTE_GLOBALE_SPRITES.update(ecran)
-    liste_de_sprites = list(LISTE_point)
     for sprite in VIVANT:
         sprite.collision(ecran, lp, right, left)
     if personnag.vie > 0:
@@ -369,7 +359,7 @@ while continuer:
     #bouton(ecran,BLANC,"salut Machin",dire_bonjour,(50,50),50)
 
     Quitter.draw(ecran,[w-Quitter.get_width()-5,5],clic)
-    ok.draw(ecran,[w/2-ok.get_width(),h/2-ok.get_height()],clic)
+    Setting.draw(ecran,[Quitter.place[0]-Setting.get_width()-5,5],clic)
 
     pygame.display.flip()
 
