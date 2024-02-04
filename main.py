@@ -4,9 +4,10 @@ import imageio
 from gif import *
 from fonctions import *
 from classe import *
-from time import sleep
+from time import sleep ,time
 import pygame_gui
 from math import *
+import sys
 
 
 
@@ -17,27 +18,86 @@ info = pygame.display.Info()
 largeur_ecran = info.current_w
 hauteur_ecran = info.current_h
 
+print(largeur_ecran,hauteur_ecran)
+
 # intro
-'''
-loading = pygame.display.set_mode((largeur_ecran/2,hauteur_ecran/2),pygame.NOFRAME | pygame.SWSURFACE)
+
+loading = pygame.display.set_mode((largeur_ecran/2,hauteur_ecran/2),pygame.HWSURFACE | pygame.NOFRAME | pygame.SRCALPHA)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Loading")
 
-POLICE_ARIAL = pygame.font.SysFont("Arial",35,1,1)
-with open('version.txt', 'r') as fichier:
-    v = fichier.readline()
+# Activer l'anti-aliasing sur la surface
+loading.set_alpha(None)
+
+with open('version.txt', 'r', encoding='utf-8') as file:
+    v = file.readline().rstrip('\n\r')
 version = "version: "+str(v)
-Text = POLICE_ARIAL.render(version,1,BLANC)
-text_rect = Text.get_rect()
-#print(text_rect[3],text_rect)
-loading.blit(Text,(w/2-text_rect[2]/2,h/2-text_rect[3]/2))
 
-pygame.display.flip()
+text = ecrire(BLANC, version, 50)
+text.render(loading,(w/2-text.get_width()/2,h/2-text.get_height()/2))
 
-sleep(4)
+print(w,h)
+
+start_time = time()
+
+duree = 5
+
+surface_ok = pygame.Surface((40,40), pygame.SRCALPHA)
+
+r=100
+
+
+start_angle = 0
+end_angle = 3.14
+
+a = 1
+
+r=0
+
+surface_2 = pygame.transform.rotate(surface_ok,r)
+
+while time() - start_time < 5:
+    r += -rad_2_deg(0.01)
+    if r==360:
+        r=0
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+    
+    if a==1:
+        end_angle -= 0.01
+    else:
+        start_angle -= 0.01
+
+    if end_angle < start_angle+0.01:
+        a = 2
+    elif start_angle < -pi:
+        a = 1
+
+    if start_angle < -pi and end_angle < -pi:
+        start_angle = 3.14
+        end_angle = 3.14
+
+    if start_angle < -0 and end_angle > 3 and end_angle < pi:
+        start_angle = 0.001
+        end_angle = 3.14
+        a = 1
+
+    loading.fill(NOIR)
+    surface_2.fill(NOIR)
+    surface_ok.fill(NOIR)
+    text.render(loading,(w/2-text.get_width()/2,h/2-text.get_height()/2))
+    pygame.draw.arc(surface_ok, BLANC, pygame.Rect(0,0,surface_ok.get_width(),surface_ok.get_height()), start_angle, end_angle, 5)
+    surface_2 = pygame.transform.rotate(surface_ok,r)
+
+    loading.blit(surface_2,(surface_2.get_rect(center=(100//2,100//2))))
+    pygame.display.flip()
+
+
 
 pygame.quit()
-'''
+
+pygame.init()
 
 
 
@@ -63,7 +123,7 @@ avencement = 0
 
 boutons = []
 
-ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE, display=0)
+ecran = pygame.display.set_mode((largeur_ecran,hauteur_ecran),pygame.SHOWN | pygame.FULLSCREEN | pygame.SCALED , display=0)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
 
@@ -74,22 +134,21 @@ icon = pygame.image.load("ico.png")
 # Définir l'icône de la fenêtre
 pygame.display.set_icon(icon)
 
-coeur = pygame.image.load("coeur.png").convert_alpha()
-coeur = pygame.transform.scale(coeur, (30,30))
+coeur = pygame.image.load("ico.png").convert_alpha()
+coeur = pygame.transform.scale(coeur, (TUILE_TAILLE*1.5,TUILE_TAILLE*1.5))
 
 nombre_manettes = pygame.joystick.get_count()
 for i in range(nombre_manettes):
     manette = pygame.joystick.Joystick(i)
     manette.init()
 
-background = pygame.Surface(ecran.get_size())
-background.fill(NOIR)
 
 
 
-fond = pygame.image.load("fond.png").convert_alpha()
+fond_load = pygame.image.load("fond.png").convert_alpha()
 setting = pygame.image.load("tuiles/parametres.png").convert_alpha()
-fond = pygame.transform.scale(fond, (w,h))
+fond = pygame.transform.scale(fond_load, (h/607*3000,h))
+
 
 
 # Ouvrir le fichier en mode lecture
@@ -144,7 +203,7 @@ lp = sorted(ma_liste, key=custom_sort)
 for element in lp:
     del element[2]
 
-print(lp)
+
 
 
 
@@ -165,8 +224,8 @@ for i in range(len(lp)-1):
         pente = 222
     coté1 = lp[i+1][0]-lp[i][0]
     coté2 = lp[i+1][1]-lp[i][1]
-    coté3 = math.sqrt(coté1*coté1+coté2*coté2)
-    angle = math.degrees(math.atan2(coté1, coté2))-90
+    coté3 = sqrt(coté1*coté1+coté2*coté2)
+    angle = degrees(atan2(coté1, coté2))-90
     surfaces.append([0,0,0])
     surfaces[i][0] = pygame.Surface((coté3,TUILE_TAILLE), pygame.SRCALPHA)
     for n in range(round(coté3/TUILE_TAILLE)):
@@ -175,6 +234,13 @@ for i in range(len(lp)-1):
     surfaces[i][0] = pygame.transform.rotate(surfaces[i][0], angle)
     surfaces[i][1],surfaces[i][2] = x1,y1
     if pente > 0:
+        AB = TUILE_TAILLE
+        C = 90
+        B = angle
+        print("angle",B)
+        A = 180 - B - C
+        CA = AB*sin(B)
+        print(CA)
         surfaces[i][1],surfaces[i][2] = x1,y1
     elif pente < 0:
         surfaces[i][1],surfaces[i][2] = x1,y1+(y2-y1)
@@ -183,10 +249,9 @@ for i in range(len(lp)-1):
 
         
 lp.insert(0, [0,h])
-end = lp[len(lp)-1][0]
-lp.insert(0, [end,h])
+lp.append([lp[len(lp)-1][0],h])
 
-def affich_map(av):
+def affich_map():
     for element in surfaces:
         if left == 1:
             personnag.direction = "l"
@@ -239,6 +304,7 @@ clock = pygame.time.Clock()
 
 Quitter = btn("Quitter",quitter,50)
 Setting = btn(setting,quitter,50)
+text = ecrire(BLANC,"x"+str(personnag.vie), 50)
 
 
 while continuer:
@@ -250,12 +316,11 @@ while continuer:
         if event.type == pygame.QUIT:
             quitter()
         if event.type == pygame.VIDEORESIZE:
-            fond = pygame.transform.scale(fond, (h/607*3000,h))
-            print(h/607*w,w)
+            fond = pygame.transform.scale(fond_load, (h/607*3000,h))
             personnag.rect.x = w/2 - personnag.rect[2]/2
-            lp[0] = [0,h]
-            end = lp[len(lp)-1][0]
-            lp[len(lp)-1] = [end,h]
+            lp[0][1] = h
+            lp[len(lp)-1][1] = h
+            print(lp)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_s:
@@ -265,7 +330,6 @@ while continuer:
             if event.key == pygame.K_RIGHT:
                 right=1
             if event.key == pygame.K_SPACE:
-                print(Quitter.get_width())
                 space=1
                 start_time = pygame.time.get_ticks()
 
@@ -324,7 +388,7 @@ while continuer:
 
 
     ecran.blit(fond,(fondx,0))
-    affich_map(personnag.av)
+    affich_map()
     pygame.draw.polygon(ecran, (227, 153, 76), lp)
     LISTE_GLOBALE_SPRITES.update(ecran)
     for sprite in VIVANT:
@@ -333,7 +397,7 @@ while continuer:
         personnag.avancer(right, left, space, ecran, elapsed_time, lp)
         personnag.collision(ecran, lp, right, left)
         ecran.blit(coeur,(0,3))
-        ecrire(ecran,NOIR,"x"+str(personnag.vie),(35,0),40)
+        text.render(ecran,(TUILE_TAILLE*1.5+1,9))
 
     elapsed_time = 0
 
@@ -361,6 +425,10 @@ while continuer:
     Quitter.draw(ecran,[w-Quitter.get_width()-5,5],clic)
     Setting.draw(ecran,[Quitter.place[0]-Setting.get_width()-5,5],clic)
 
+
+    ecran.blit(coeur,(0,0))
+
     pygame.display.flip()
+
 
 pygame.quit()

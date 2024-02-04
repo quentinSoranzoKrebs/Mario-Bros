@@ -3,6 +3,8 @@ import pygame
 import pygame_gui
 import platform
 import datetime
+from math import *
+import sys
 
 
 system = platform.system()
@@ -18,13 +20,6 @@ else:
 
 pygame.init()
 
-# fonction pour écrire
-def ecrire(surface,couleur,text,place,taille):
-    font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
-    #POLICE_ARIAL = pygame.font.SysFont("Arial",taille,1,1)
-    text = font.render(text,1,couleur)
-    text_rect = text.get_rect()
-    surface.blit(text,place)
 
     
 # Fonction pour dessiner un rectangle avec des coins arrondis
@@ -69,6 +64,7 @@ def quitter():
 
     if response:
         pygame.quit()
+        sys.exit()
     else:
         print("Vous avez annulé la fermeture de l'application.")
         # Ajoutez ici le code pour gérer l'annulation de la fermeture
@@ -82,3 +78,11 @@ def screenshot(surface):
 def change_window(w,h,fond):
     fond = pygame.transform.scale(fond, (w,h))
     print("ici")
+
+def deg_2_rad(deg:float) -> float:
+    '''Cette fonction permet de convertir les degré du paramètre `deg` en radian.'''
+    return deg*(2*pi)/360
+
+def rad_2_deg(rad:float) -> float:
+    '''Cette fonction permet de convertir les radian du paramètre `rad` en degré.'''
+    return 360*rad/(2*pi)

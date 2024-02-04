@@ -4,9 +4,20 @@ from constantes import *
 from fonctions import *
 from time import sleep
 from random import randint
-import math
-#from tkinter import messagebox
+from typing import Union
+import platform
 
+'''
+system = platform.system()
+
+if system == 'Linux':
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+import subprocess
+#from tkinter import messagebox
+'''
 pygame.init()
 
 LISTE_OBJETS = pygame.sprite.Group()
@@ -22,6 +33,36 @@ lp = ()
 ma_liste = []
 
 
+'''
+def demande_code(parent):
+    dialog = Gtk.EntryDialog(parent, "Entrez votre code :", parent, Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
+    dialog.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
+    dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+
+    entry = dialog.get_entry()
+    entry.set_text("")
+
+    dialog.show_all()
+    response = dialog.run()
+    code = entry.get_text()
+    dialog.destroy()
+
+    if response == Gtk.ResponseType.OK:
+        return code
+    else:
+        return None
+
+code = demande_code(None)
+if code:
+    print("Code entré :", code)
+    # Remplacez "votre_commande" par la commande que vous souhaitez exécuter avec le code.
+    try:
+        subprocess.run(["votre_commande", code], check=True)
+    except subprocess.CalledProcessError as e:
+        print("Erreur lors de l'exécution de la commande :", e)
+else:
+    print("Aucun code entré.")
+'''
 
 
 class vivant():
@@ -48,12 +89,12 @@ class vivant():
                 try:
                     self.pente = (y2-y1)/(x2-x1)
                     if self.pente < 0:
-                        if right == 1:
+                        if self.direction == "r":
                             self.rect.y = y1+((self.rect[2]+self.rect.x)-x1)*self.pente - self.rect[3]+13
                         else:
                             self.rect.y = y1+self.pente*((self.rect[2]+self.rect.x)-x1) - self.rect[3]+13
                     else:
-                        if right == 1:
+                        if self.direction == "r":
                             self.rect.y = y1+self.pente*((self.rect.x)-x1) - self.rect[3]+13
                         else:
                             self.rect.y = y1+self.pente*((self.rect.x)-x1) - self.rect[3]+1
@@ -109,10 +150,10 @@ class vivant():
             self.chute_vitesse = 0
 
     def collision_droite(self):
-        pass
+        self.direction = "l"
 
     def collision_gauche(self):
-        pass
+        self.direction = "r"
 
 
 class tuile():
@@ -260,7 +301,6 @@ class goomba(pygame.sprite.Sprite, vivant):
         self.rect.y = y
         self.rect.x = x
         self.vie = 1
-
 
     def update(self,ecran):
         if self.vie > 0:
@@ -491,3 +531,32 @@ class btn:
     
     def get_height(self):
         return self.rect[3]
+
+
+class ecrire:
+
+    def __init__(self,
+           couleur:(int,int,int),
+           text: str,
+           taille:int
+           ) -> None:
+        
+        self.text = text
+        self.place = (0,0)
+        self.font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
+        self.text_rend = self.font.render(self.text,1,couleur)
+        self.text_rect = self.text_rend.get_rect()
+
+    def render(self,surface: pygame.Surface,
+               place:(Union[int, float],Union[int, float])):
+        self.place = place
+        self.surface = pygame.Surface((self.text_rect[2], self.text_rect[3]), pygame.SRCALPHA)
+        self.surface.blit(self.text_rend,(0,0))
+        surface.blit(self.surface,(self.place))
+
+    def get_width(self) -> int:
+        return self.text_rect[2]
+    def get_height(self) -> int:
+        return self.text_rect[3]
+
+
