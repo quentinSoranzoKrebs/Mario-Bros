@@ -1,0 +1,25 @@
+{
+    "T": {
+      "type": "bouton",
+      "element": "image",
+      "round": 4,
+      "marge": 5,
+      "suite": "quitter",
+      "surface": "marge",
+      "place": "(0,h/2)",
+      "image": "tuiles/T.png"
+    },
+    
+    "M": {
+      "type": "bouton",
+      "element": "image",
+      "round": 4,
+      "marge": 5,
+      "suite": "quitter",
+      "surface": "marge",
+      "place": "(T.get_width(),h/2)",
+      "image": "tuiles/M.png"
+    }
+    
+  }
+  

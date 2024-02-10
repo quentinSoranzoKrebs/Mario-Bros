@@ -1,8 +1,5 @@
 {
-
-
-
-    "button": {
+    "bouton": {
         "normal_bg": "#dcdad5",
         "hovered_bg": "#d3d1cc",
         "active_bg": "#cac8c3",

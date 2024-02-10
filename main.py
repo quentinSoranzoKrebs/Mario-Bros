@@ -33,8 +33,7 @@ with open('version.txt', 'r', encoding='utf-8') as file:
     v = file.readline().rstrip('\n\r')
 version = "version: "+str(v)
 
-text = ecrire(BLANC, version, 50)
-text.render(loading,(w/2-text.get_width()/2,h/2-text.get_height()/2))
+vs = ecrire(BLANC, version, 50)
 
 print(w,h)
 
@@ -51,7 +50,6 @@ start_angle = 0
 end_angle = 3.14
 
 a = 1
-
 r=0
 
 surface_2 = pygame.transform.rotate(surface_ok,r)
@@ -86,7 +84,7 @@ while time() - start_time < 5:
     loading.fill(NOIR)
     surface_2.fill(NOIR)
     surface_ok.fill(NOIR)
-    text.render(loading,(w/2-text.get_width()/2,h/2-text.get_height()/2))
+    loading.blit(vs(),(w/2-vs.get_width()/2,h/2-vs.get_height()/2))
     pygame.draw.arc(surface_ok, BLANC, pygame.Rect(0,0,surface_ok.get_width(),surface_ok.get_height()), start_angle, end_angle, 5)
     surface_2 = pygame.transform.rotate(surface_ok,r)
 
@@ -123,6 +121,8 @@ avencement = 0
 
 boutons = []
 
+manettes = []
+
 ecran = pygame.display.set_mode((largeur_ecran,hauteur_ecran),pygame.SHOWN | pygame.FULLSCREEN | pygame.SCALED , display=0)
 w,h = pygame.display.get_surface().get_size()
 pygame.display.set_caption("Mario Bros","Mario Bros")
@@ -139,8 +139,9 @@ coeur = pygame.transform.scale(coeur, (TUILE_TAILLE*1.5,TUILE_TAILLE*1.5))
 
 nombre_manettes = pygame.joystick.get_count()
 for i in range(nombre_manettes):
-    manette = pygame.joystick.Joystick(i)
-    manette.init()
+    manettes.append(pygame.joystick.Joystick(i))
+    manettes[i].init()
+    print(manettes[i].get_name())
 
 
 
@@ -397,7 +398,7 @@ while continuer:
         personnag.avancer(right, left, space, ecran, elapsed_time, lp)
         personnag.collision(ecran, lp, right, left)
         ecran.blit(coeur,(0,3))
-        text.render(ecran,(TUILE_TAILLE*1.5+1,9))
+        ecran.blit(text(),(TUILE_TAILLE*1.5+1,9))
 
     elapsed_time = 0
 

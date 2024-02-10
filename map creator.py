@@ -5,6 +5,12 @@ from fonctions import *
 from classe import *
 from time import sleep
 import pygame_gui
+import json
+
+
+liste_boutons = []
+   
+
 
 pygame.init()
 
@@ -15,13 +21,37 @@ info = pygame.display.Info()
 largeur_ecran = info.current_w
 hauteur_ecran = info.current_h
 
-with open('version.txt', 'r') as fichier:
-    premiere_ligne = fichier.readline()
+
+
+
+with open('version.txt', 'r', encoding='utf-8') as file:
+    v = file.readline().rstrip('\n\r')
 
 ecran = pygame.display.set_mode((1300,650),pygame.RESIZABLE)
 w,h = pygame.display.get_surface().get_size()
-pygame.display.set_caption("Mario Bros","Mario Bros "+str(premiere_ligne))
+pygame.display.set_caption("Mario Bros Map Creator "+str(v),"Mario Bros Map Creator "+str(v))
 #pygame.display.(400, 300)
+
+# Lecture des données depuis un fichier JSON
+with open("map_créator.json", "r") as fichier_json:
+    donnees = json.load(fichier_json)
+
+for objet in donnees:
+    if donnees[objet]["type"] == "bouton":
+        if donnees[objet]["element"] == "image":
+            origine = pygame.image.load(donnees[objet]['image']).convert_alpha()
+            _bouton = btn(origine,eval(donnees[objet]["suite"]),TUILE_TAILLE,donnees[objet]["marge"],donnees[objet]["round"])
+        elif donnees[objet]["element"] == "text":
+            _bouton = btn(donnees[objet]["text"],eval(donnees[objet]["suite"]),TUILE_TAILLE,donnees[objet]["marge"],donnees[objet]["round"])
+        liste_boutons.append([_bouton,objet])
+
+
+
+C_origine = pygame.image.load("tuiles/C.png").convert_alpha()
+T_origine = pygame.image.load("tuiles/T.png").convert_alpha()
+S_origine = pygame.image.load("tuiles/Sancien.png").convert_alpha()
+F_origine = pygame.image.load("tuiles/Sancien.png").convert_alpha()
+M_origine = pygame.image.load("tuiles/M.png").convert_alpha()
 
 # Style pour le bouton avec coins arrondis
 style_bouton = {
@@ -49,6 +79,7 @@ icone = pygame.image.load("ico_edit.png")
 pygame.display.set_icon(icone)
 
 
+
 background = pygame.Surface(ecran.get_size())
 background.fill(NOIR)
 
@@ -57,7 +88,18 @@ clock = pygame.time.Clock()
 
 save = btn("Sauvegarder",quitter,round(w/1300*50))
 
-_mur = MUR(w-w/8,h/2)
+C = btn(C_origine,quitter,TUILE_TAILLE,2,4)
+T = btn(T_origine,quitter,TUILE_TAILLE,5,4)
+S = btn(S_origine,quitter,TUILE_TAILLE,5,4)
+F = btn(F_origine,quitter,TUILE_TAILLE,5,4)
+M = btn(M_origine,quitter,TUILE_TAILLE,5,4)
+
+liste_tuiles = [[C,TUILE_TAILLE],[T,TUILE_TAILLE],[S,TUILE_TAILLE],[F,TUILE_TAILLE]]
+    
+
+titre = ecrire(BLANC,"Map creator v"+str(v),round(w/35))
+
+_mur = MUR(w/2,h/2)
 LISTE_GLOBALE_SPRITES.add(_mur)
 LISTE_AFFICH.add(_mur)
 
@@ -67,9 +109,7 @@ while continuer:
 
     w,h = pygame.display.get_surface().get_size()
 
-    background = pygame.Surface(ecran.get_size())
-    background.fill(NOIR)
-
+    ecran.fill(NOIR)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -89,13 +129,6 @@ while continuer:
             if event.button == 1:
                 clic = 0
 
-        if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == hello_button:
-                print('Hello World!')
-
-        manager.process_events(event)
-
-
 
     ecran.blit(background,(0,0))
     for i in range(round(w/(h/14))):
@@ -107,20 +140,17 @@ while continuer:
     pygame.draw.line(ecran,BLANC,(0,h-1),(w,h-1))
 
     marge = pygame.Surface((w/4,h), pygame.SRCALPHA)
-    marge.fill((70,70,70))
-    ecran.blit(marge,(w-w/4,0))
+    marge.fill((20,20,20))
     LISTE_AFFICH.draw(ecran)
+    marge.blit(titre(),(0,10))
+    print(marge.get_offset())
 
-    ecrire(ecran,BLANC,"Map creator v"+str(premiere_ligne),(w-w/4,10),round(w/35))
+    save.draw(marge,[3,h-save.get_height()-5],clic)
+    for objet in liste_boutons:
+        objet[0].draw(eval(donnees[objet[1]]["surface"]), eval(donnees[objet[1]]["place"]), clic)
 
-    save.draw(ecran,[w-save.get_width()-5,h-save.get_height()-5],clic)
-
-
-
+    ecran.blit(marge,(w-w/4,0))
     manager.update(30)
-    #manager.draw_ui(ecran)
-    pygame.display.flip()
-            
     pygame.display.flip()
 
 pygame.quit()

@@ -69,6 +69,12 @@ def quitter():
         print("Vous avez annulé la fermeture de l'application.")
         # Ajoutez ici le code pour gérer l'annulation de la fermeture
 
+def key_pass():
+    if system == "Windows":
+        pass
+
+
+
 def screenshot(surface):
     now1 = datetime.datetime.now()
     format = "%Y-%m-%d %H:%M:%S"

@@ -4,7 +4,7 @@ from constantes import *
 from fonctions import *
 from time import sleep
 from random import randint
-from typing import Union
+from typing import Union, overload
 import platform
 
 '''
@@ -32,37 +32,6 @@ VIVANT = pygame.sprite.Group()
 lp = ()
 ma_liste = []
 
-
-'''
-def demande_code(parent):
-    dialog = Gtk.EntryDialog(parent, "Entrez votre code :", parent, Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT)
-    dialog.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
-    dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
-
-    entry = dialog.get_entry()
-    entry.set_text("")
-
-    dialog.show_all()
-    response = dialog.run()
-    code = entry.get_text()
-    dialog.destroy()
-
-    if response == Gtk.ResponseType.OK:
-        return code
-    else:
-        return None
-
-code = demande_code(None)
-if code:
-    print("Code entré :", code)
-    # Remplacez "votre_commande" par la commande que vous souhaitez exécuter avec le code.
-    try:
-        subprocess.run(["votre_commande", code], check=True)
-    except subprocess.CalledProcessError as e:
-        print("Erreur lors de l'exécution de la commande :", e)
-else:
-    print("Aucun code entré.")
-'''
 
 
 class vivant():
@@ -484,42 +453,54 @@ class perso(pygame.sprite.Sprite, vivant):
         
 
 class btn:
-    def __init__(self,element,suite,taille):
+    def __init__(self,
+                 element,
+                 suite,
+                 taille,
+                 marge = 2,
+                 rounde = 4,
+                 initial_color = (200,200,200,200),
+                 final_color = (0,115,229,255)):
+        
         self.place = [0,0]
         self.couleur = BLANC
+        self.marge = marge
+        self.initial_color = initial_color
+        self.final_color = final_color
         if isinstance(element, pygame.Surface):
             self.element = element
             self.element = pygame.transform.scale(element, (taille,taille))
-            print(taille)
             self.element_rect = self.element.get_rect()
         else:
             self.text = element
             font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
             self.element = font.render(element,1,self.couleur)
             self.element_rect = self.element.get_rect()
-        self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+taille/2*2, self.element_rect[3]+taille/3*2)
-        self.rect_rect = pygame.Rect(0,0, self.element_rect[2]+taille/2*2, self.element_rect[3]+taille/3*2)
+        self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+taille/self.marge*2, self.element_rect[3]+taille/(self.marge+1)*2)
+        self.rect_rect = pygame.Rect(0,0, self.element_rect[2]+taille/self.marge*2, self.element_rect[3]+taille/(self.marge+1)*2)
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         self.taille = taille
         self.suite = suite
+        self.rounde = self.rect_rect[3]/rounde
     
     def draw(self,surface,place,clic):
         self.place = place
-        self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+self.taille/2*2, self.element_rect[3]+self.taille/3*2)
+        self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+self.taille/self.marge*2, self.element_rect[3]+self.taille/(self.marge+1)*2)
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
+        rect_réel = pygame.Rect(self.rect[0] + surface.get_abs_offset()[0], self.rect[1] + surface.get_abs_offset()[1],self.rect[2],self.rect[3])
         point = pygame.mouse.get_pos()
-        collide = self.rect.collidepoint(point)
+        collide = rect_réel.collidepoint(point)
         if collide:
-            color = (0,115,229,255)
+            color = self.final_color
             if clic == 1:
                 self.suite()
         else:
-            color = (200,200,200,200)
-        draw_rounded_rect(self.surface, color, self.rect_rect, self.rect_rect[3]/4)
-        self.surface.blit(self.element,(self.taille/2,self.taille/3))
+            color = self.initial_color
+        draw_rounded_rect(self.surface, color, self.rect_rect, self.rounde)
+        self.surface.blit(self.element,(self.taille/self.marge,self.taille/(self.marge+1)))
         surface.blit(self.surface,(self.rect[0],self.rect[1]))
     
-    def color(self,couleur):
+    def set_color(self,couleur):
         self.couleur = couleur
         print(couleur)
         font = pygame.font.Font("calibri-font/calibri-regular.ttf", self.taille)
@@ -534,7 +515,6 @@ class btn:
 
 
 class ecrire:
-
     def __init__(self,
            couleur:(int,int,int),
            text: str,
@@ -546,14 +526,11 @@ class ecrire:
         self.font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
         self.text_rend = self.font.render(self.text,1,couleur)
         self.text_rect = self.text_rend.get_rect()
-
-    def render(self,surface: pygame.Surface,
-               place:(Union[int, float],Union[int, float])):
-        self.place = place
         self.surface = pygame.Surface((self.text_rect[2], self.text_rect[3]), pygame.SRCALPHA)
         self.surface.blit(self.text_rend,(0,0))
-        surface.blit(self.surface,(self.place))
 
+    def __call__(self) -> pygame.surface:
+        return self.surface
     def get_width(self) -> int:
         return self.text_rect[2]
     def get_height(self) -> int:
