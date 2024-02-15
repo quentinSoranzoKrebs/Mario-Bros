@@ -454,21 +454,27 @@ class perso(pygame.sprite.Sprite, vivant):
 
 class btn:
     def __init__(self,
-                 element,
+                 element: Union[str,pygame.Surface],
                  suite,
                  taille,
                  marge = 2,
                  rounde = 4,
+                 arg = None,
                  initial_color = (200,200,200,200),
-                 final_color = (0,115,229,255)):
+                 final_color = (0,115,229,255),
+                 effet = None):
         
         self.place = [0,0]
+        self.arg = arg
         self.couleur = BLANC
         self.marge = marge
         self.initial_color = initial_color
         self.final_color = final_color
         if isinstance(element, pygame.Surface):
             self.element = element
+            if effet:
+                self.effet = effet
+                self.effet = pygame.transform.scale(effet, (taille,taille))
             self.element = pygame.transform.scale(element, (taille,taille))
             self.element_rect = self.element.get_rect()
         else:
@@ -487,13 +493,12 @@ class btn:
         self.place = place
         self.rect = pygame.Rect(self.place[0], self.place[1], self.element_rect[2]+self.taille/self.marge*2, self.element_rect[3]+self.taille/(self.marge+1)*2)
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
-        rect_réel = pygame.Rect(self.rect[0] + surface.get_abs_offset()[0], self.rect[1] + surface.get_abs_offset()[1],self.rect[2],self.rect[3])
         point = pygame.mouse.get_pos()
-        collide = rect_réel.collidepoint(point)
+        collide = self.rect.collidepoint(point)
         if collide:
             color = self.final_color
             if clic == 1:
-                self.suite()
+                self.suite(self.arg)
         else:
             color = self.initial_color
         draw_rounded_rect(self.surface, color, self.rect_rect, self.rounde)
@@ -537,3 +542,27 @@ class ecrire:
         return self.text_rect[3]
 
 
+class setting_bar:
+    def __init__(self,
+                 image,
+                 text,
+                 sous_text,
+                 suite,
+                 arg = None,
+                 rounde = 10,
+                 initial_color = (200,200,200,200),
+                 final_color = (0,115,229,255)
+                 ):
+        img = pygame.image.load(image).convert_alpha()
+        self.image = pygame.transform.scale(img, (TUILE_TAILLE*1.5,TUILE_TAILLE*1.5))
+        self.text = ecrire(BLANC,text,40)
+        w,h = pygame.display.get_surface().get_size()
+        self.rect = pygame.Rect(0,0,round(0.94*w),round(w/17))
+        self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
+        draw_rounded_rect(self.surface, (50, 50,50), self.rect, rounde)
+        self.surface.blit(self.text(),(self.image.get_width()+w/40,0))
+        self.surface.blit(self.image,(0,0))
+
+
+    def __call__(self) -> pygame.surface:
+        return self.surface

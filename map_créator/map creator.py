@@ -7,8 +7,6 @@ from time import sleep
 import pygame_gui
 import json
 
-
-liste_boutons = []
    
 
 
@@ -21,7 +19,7 @@ info = pygame.display.Info()
 largeur_ecran = info.current_w
 hauteur_ecran = info.current_h
 
-
+select = "0"
 
 
 with open('version.txt', 'r', encoding='utf-8') as file:
@@ -36,22 +34,26 @@ pygame.display.set_caption("Mario Bros Map Creator "+str(v),"Mario Bros Map Crea
 with open("map_créator.json", "r") as fichier_json:
     donnees = json.load(fichier_json)
 
-for objet in donnees:
-    if donnees[objet]["type"] == "bouton":
-        if donnees[objet]["element"] == "image":
-            origine = pygame.image.load(donnees[objet]['image']).convert_alpha()
-            _bouton = btn(origine,eval(donnees[objet]["suite"]),TUILE_TAILLE,donnees[objet]["marge"],donnees[objet]["round"])
-        elif donnees[objet]["element"] == "text":
-            _bouton = btn(donnees[objet]["text"],eval(donnees[objet]["suite"]),TUILE_TAILLE,donnees[objet]["marge"],donnees[objet]["round"])
-        liste_boutons.append([_bouton,objet])
+liste_boutons = [0]*len(donnees)
+
+print(donnees["Bord"].get("taille", TUILE_TAILLE))
+
+def import_json(donnees,TUILE_TAILLE):
+    for i, objet in enumerate(donnees):
+        if donnees[objet]["type"] == "bouton":
+            if donnees[objet]["element"] == "image":
+                origine = pygame.image.load(donnees[objet]['image']).convert_alpha()
+                _bouton = btn(origine,eval(donnees[objet]["suite"]),donnees[objet].get("taille", TUILE_TAILLE),donnees[objet]["marge"],donnees[objet]["round"],arg = donnees[objet]["arg"],initial_color = eval(donnees[objet].get("initial_color", "(200,200,200,40)")),final_color = eval(donnees[objet].get("final_color", "(0,115,229,100)")))
+            elif donnees[objet]["element"] == "text":
+                _bouton = btn(donnees[objet]["text"],eval(donnees[objet]["suite"]),TUILE_TAILLE,donnees[objet]["marge"],donnees[objet]["round"],arg = donnees[objet]["arg"])
+            liste_boutons[i] = [_bouton,objet]
+
+import_json(donnees,TUILE_TAILLE)
+
+print(liste_boutons)
 
 
 
-C_origine = pygame.image.load("tuiles/C.png").convert_alpha()
-T_origine = pygame.image.load("tuiles/T.png").convert_alpha()
-S_origine = pygame.image.load("tuiles/Sancien.png").convert_alpha()
-F_origine = pygame.image.load("tuiles/Sancien.png").convert_alpha()
-M_origine = pygame.image.load("tuiles/M.png").convert_alpha()
 
 # Style pour le bouton avec coins arrondis
 style_bouton = {
@@ -88,14 +90,7 @@ clock = pygame.time.Clock()
 
 save = btn("Sauvegarder",quitter,round(w/1300*50))
 
-C = btn(C_origine,quitter,TUILE_TAILLE,2,4)
-T = btn(T_origine,quitter,TUILE_TAILLE,5,4)
-S = btn(S_origine,quitter,TUILE_TAILLE,5,4)
-F = btn(F_origine,quitter,TUILE_TAILLE,5,4)
-M = btn(M_origine,quitter,TUILE_TAILLE,5,4)
-
-liste_tuiles = [[C,TUILE_TAILLE],[T,TUILE_TAILLE],[S,TUILE_TAILLE],[F,TUILE_TAILLE]]
-    
+bar1 = setting_bar("tuiles/parametres.png","ceci est un exemple de text","sous text",quitter,None)    
 
 titre = ecrire(BLANC,"Map creator v"+str(v),round(w/35))
 
@@ -104,6 +99,7 @@ LISTE_GLOBALE_SPRITES.add(_mur)
 LISTE_AFFICH.add(_mur)
 
 while continuer:
+    TUILE_TAILLE = h/14
     time_delta = clock.tick(60) / 1000.0
 
 
@@ -113,10 +109,10 @@ while continuer:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            quitter()
+            quitter(None)
         if event.type == pygame.VIDEORESIZE:
             save = btn("Sauvegarder",quitter,round(w/1300*50))
-            TUILE_TAILLE = h/14
+            import_json(donnees,TUILE_TAILLE)
             for sprite in LISTE_GLOBALE_SPRITES:
                 
                 sprite.resize(TUILE_TAILLE,TUILE_TAILLE)
@@ -124,6 +120,16 @@ while continuer:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 clic = 1
+                point = pygame.mouse.get_pos()
+                x = round(point[0] / TUILE_TAILLE) * TUILE_TAILLE
+                if x > point[0]:
+                    x-=TUILE_TAILLE
+                y = round(point[1] / TUILE_TAILLE) * TUILE_TAILLE
+                if y > point[1]:
+                    y-=TUILE_TAILLE
+                _mur = MUR(x,y)
+                LISTE_GLOBALE_SPRITES.add(_mur)
+                LISTE_AFFICH.add(_mur)
 
         if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1:
@@ -143,13 +149,14 @@ while continuer:
     marge.fill((20,20,20))
     LISTE_AFFICH.draw(ecran)
     marge.blit(titre(),(0,10))
-    print(marge.get_offset())
+    ecran.blit(marge,(w-w/4,0))
+    #ecran.blit(bar1(),(0,0))
 
-    save.draw(marge,[3,h-save.get_height()-5],clic)
+    save.draw(ecran,[0.76*w,h-save.get_height()-5],clic)
     for objet in liste_boutons:
         objet[0].draw(eval(donnees[objet[1]]["surface"]), eval(donnees[objet[1]]["place"]), clic)
 
-    ecran.blit(marge,(w-w/4,0))
+  
     manager.update(30)
     pygame.display.flip()
 

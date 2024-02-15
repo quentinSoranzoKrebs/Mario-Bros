@@ -4,9 +4,10 @@
       "element": "image",
       "round": 4,
       "marge": 5,
-      "suite": "quitter",
-      "surface": "marge",
-      "place": "(0,h/2)",
+      "suite": "select_egal",
+      "arg": "T",
+      "surface": "ecran",
+      "place": "(0.77*w,0.35*h)",
       "image": "tuiles/T.png"
     },
     
@@ -15,11 +16,64 @@
       "element": "image",
       "round": 4,
       "marge": 5,
-      "suite": "quitter",
-      "surface": "marge",
-      "place": "(T.get_width(),h/2)",
+      "suite": "select_egal",
+      "arg": "M",
+      "surface": "ecran",
+      "place": "(0.85*w,0.35*h)",
       "image": "tuiles/M.png"
+    },
+
+    "S": {
+      "type": "bouton",
+      "element": "image",
+      "round": 4,
+      "marge": 5,
+      "suite": "select_egal",
+      "arg": "S",
+      "surface": "ecran",
+      "place": "(0.93*w,0.35*h)",
+      "image": "tuiles/Sancien.png"
+    },
+
+
+    "C": {
+      "type": "bouton",
+      "element": "image",
+      "round": 4,
+      "marge": 5,
+      "suite": "select_egal",
+      "arg": "C",
+      "surface": "ecran",
+      "place": "(0.77*w,0.50*h)",
+      "image": "tuiles/C.png"
+    },
+
+    "F": {
+      "type": "bouton",
+      "element": "image",
+      "round": 4,
+      "marge": 5,
+      "suite": "select_egal",
+      "arg": "F",
+      "surface": "ecran",
+      "place": "(0.85*w,0.50*h)",
+      "image": "tuiles/F.png"
+    },
+
+    "Bord": {
+      "type": "bouton",
+      "element": "image",
+      "round": 4,
+      "marge": 5,
+      "suite": "select_egal",
+      "arg": "F",
+      "surface": "ecran",
+      "place": "(0.93*w,0.1*h)",
+      "image": "tuiles/menu_True.png",
+      "taille": 30,
+      "initial_color": "(0,0,0,0)",
+      "final_color": "(200,200,200,50)"
     }
-    
+
   }
   

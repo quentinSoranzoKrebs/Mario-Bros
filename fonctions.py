@@ -33,7 +33,7 @@ def draw_rounded_rect(surface, color, rect, radius):
     pygame.draw.circle(surface, color, (x + w - radius, y + h - radius), radius)
 
 
-def quitter():
+def quitter(arg):
     if system == "Windows":
         import ctypes
         # Définition des constantes de MessageBox
@@ -92,3 +92,8 @@ def deg_2_rad(deg:float) -> float:
 def rad_2_deg(rad:float) -> float:
     '''Cette fonction permet de convertir les radian du paramètre `rad` en degré.'''
     return 360*rad/(2*pi)
+
+def select_egal(bloc):
+    global select
+    select = bloc
+    print(select)
