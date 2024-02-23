@@ -38,6 +38,8 @@ liste_boutons = [0]*len(donnees)
 
 print(donnees["Bord"].get("taille", TUILE_TAILLE))
 
+setting = pygame.image.load("tuiles/parametres.png").convert_alpha()
+
 def import_json(donnees,TUILE_TAILLE):
     for i, objet in enumerate(donnees):
         if donnees[objet]["type"] == "bouton":
@@ -53,6 +55,7 @@ import_json(donnees,TUILE_TAILLE)
 print(liste_boutons)
 
 
+ancien_element = liste_boutons[5][0].element
 
 
 # Style pour le bouton avec coins arrondis
@@ -90,9 +93,11 @@ clock = pygame.time.Clock()
 
 save = btn("Sauvegarder",quitter,round(w/1300*50))
 
-bar1 = setting_bar("tuiles/parametres.png","ceci est un exemple de text","sous text",quitter,None)    
+save2 = btn2(text="test",command=quitter)
+save2.place(0.5,0.5)
+#bar1 = setting_bar("tuiles/parametres.png","ceci est un exemple de text","sous text",quitter)    
 
-titre = ecrire(BLANC,"Map creator v"+str(v),round(w/35))
+titre = ecrire(BLANC,"Map creator v"+str(v),round(h+w/2/35))
 
 _mur = MUR(w/2,h/2)
 LISTE_GLOBALE_SPRITES.add(_mur)
@@ -111,6 +116,7 @@ while continuer:
         if event.type == pygame.QUIT:
             quitter(None)
         if event.type == pygame.VIDEORESIZE:
+            titre = ecrire(BLANC,"Map creator v"+str(v),round((h+w)/2/20))
             save = btn("Sauvegarder",quitter,round(w/1300*50))
             import_json(donnees,TUILE_TAILLE)
             for sprite in LISTE_GLOBALE_SPRITES:
@@ -135,6 +141,14 @@ while continuer:
             if event.button == 1:
                 clic = 0
 
+        if liste_boutons[5][0].get_clic():
+            false = pygame.image.load("tuiles/menu_False.png").convert_alpha()
+            false = pygame.transform.scale(false,(30,30))
+            liste_boutons[5][0].element = false
+        else:
+            liste_boutons[5][0].element = ancien_element
+
+
 
     ecran.blit(background,(0,0))
     for i in range(round(w/(h/14))):
@@ -148,11 +162,12 @@ while continuer:
     marge = pygame.Surface((w/4,h), pygame.SRCALPHA)
     marge.fill((20,20,20))
     LISTE_AFFICH.draw(ecran)
-    marge.blit(titre(),(0,10))
+    marge.blit(titre,(0,10))
     ecran.blit(marge,(w-w/4,0))
     #ecran.blit(bar1(),(0,0))
 
     save.draw(ecran,[0.76*w,h-save.get_height()-5],clic)
+    save2.draw(ecran)
     for objet in liste_boutons:
         objet[0].draw(eval(donnees[objet[1]]["surface"]), eval(donnees[objet[1]]["place"]), clic)
 

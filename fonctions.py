@@ -5,6 +5,7 @@ import platform
 import datetime
 from math import *
 import sys
+from typing import *
 
 
 system = platform.system()
@@ -97,3 +98,16 @@ def select_egal(bloc):
     global select
     select = bloc
     print(select)
+
+def ecrire(couleur: Tuple[int,int,int],
+           text: str,
+           taille:int,
+           police:str = None
+           ) -> pygame.surface:
+
+        font = pygame.font.Font(police, taille)
+        text_rend = font.render(text,1,couleur)
+        text_rect = text_rend.get_rect()
+        surface = pygame.Surface((text_rect[2], text_rect[3]), pygame.SRCALPHA)
+        surface.blit(text_rend,(0,0))
+        return surface

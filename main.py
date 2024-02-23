@@ -84,7 +84,7 @@ while time() - start_time < 5:
     loading.fill(NOIR)
     surface_2.fill(NOIR)
     surface_ok.fill(NOIR)
-    loading.blit(vs(),(w/2-vs.get_width()/2,h/2-vs.get_height()/2))
+    loading.blit(vs,(w/2-vs.get_width()/2,h/2-vs.get_height()/2))
     pygame.draw.arc(surface_ok, BLANC, pygame.Rect(0,0,surface_ok.get_width(),surface_ok.get_height()), start_angle, end_angle, 5)
     surface_2 = pygame.transform.rotate(surface_ok,r)
 
@@ -289,8 +289,10 @@ def affich_map():
 
     
     if left == 1:
+        personnag.avence += personnag.avance_gauche*1.4
         personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 100, 100)
     if right == 1:
+        personnag.avence -= personnag.avance_droite*1.4
         personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 100, 100)
     else:
         personnag.rect = pygame.Rect(personnag.rect.x, personnag.rect.y, 30, 100)
@@ -398,7 +400,7 @@ while continuer:
         personnag.avancer(right, left, space, ecran, elapsed_time, lp)
         personnag.collision(ecran, lp, right, left)
         ecran.blit(coeur,(0,3))
-        ecran.blit(text(),(TUILE_TAILLE*1.5+1,9))
+        ecran.blit(text,(TUILE_TAILLE*1.5+1,9))
 
     elapsed_time = 0
 

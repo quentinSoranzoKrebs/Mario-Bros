@@ -4,7 +4,7 @@ from constantes import *
 from fonctions import *
 from time import sleep
 from random import randint
-from typing import Union, overload
+from typing import *    
 import platform
 
 '''
@@ -113,8 +113,6 @@ class vivant():
             self.saut=1
             self.chute_vitesse += 1
             self.rect.y = self.rect.y + self.chute_vitesse
-            self.avance_gauche = 10
-            self.avance_droite = 10
         elif self.sol:
             self.chute_vitesse = 0
 
@@ -343,19 +341,25 @@ class perso(pygame.sprite.Sprite, vivant):
         self.rdirect=True
         self.avance_droite = 10
         self.avance_gauche = 10
+        self.avence = 1
         
         #print("self.rect: ",self.rect)
 
     def avancer(self, right, left, space, ecran, time, lp):
         w,h = pygame.display.get_surface().get_size()
 
-        if self.pente > 0:
-            self.avance_gauche = 10-self.pente*5
-        elif self.pente < 0:
-            self.avance_droite = 10+self.pente*5
+        if self.avence < 0:
+            if self.pente > 0:
+                self.avance_gauche = 10-self.pente*5
+            elif self.pente < 0:
+                self.avance_droite = 10+self.pente*5
+            else:
+                self.avance_gauche = 10
+                self.avance_droite = 10
         else:
-            self.avance_gauche = 10
-            self.avance_droite = 10
+            self.avance_gauche = 0
+        
+        print(self.avence)
 
 
         if time > 0 and self.saut == 0 and space == 0:
@@ -470,6 +474,7 @@ class btn:
         self.marge = marge
         self.initial_color = initial_color
         self.final_color = final_color
+        self.is_clic = False
         if isinstance(element, pygame.Surface):
             self.element = element
             if effet:
@@ -496,8 +501,10 @@ class btn:
         point = pygame.mouse.get_pos()
         collide = self.rect.collidepoint(point)
         if collide:
+            self.is_clic = False
             color = self.final_color
             if clic == 1:
+                self.is_clic = True
                 self.suite(self.arg)
         else:
             color = self.initial_color
@@ -517,29 +524,53 @@ class btn:
     
     def get_height(self):
         return self.rect[3]
+    
+    def get_clic(self):
+        return self.is_clic
 
 
-class ecrire:
+class btn2:
     def __init__(self,
-           couleur:(int,int,int),
-           text: str,
-           taille:int
-           ) -> None:
+                 command,
+                 text = None,
+                 image = None,
+                 marge = 2,
+                 round = 4,
+                 initial_color = (200,200,200,200),
+                 final_color = (0,115,229,255),
+                 text_color = BLANC,
+                 text_taille = 40,
+                 width = None,
+                 height = None
+                 ):
         
-        self.text = text
-        self.place = (0,0)
-        self.font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
-        self.text_rend = self.font.render(self.text,1,couleur)
-        self.text_rect = self.text_rend.get_rect()
-        self.surface = pygame.Surface((self.text_rect[2], self.text_rect[3]), pygame.SRCALPHA)
-        self.surface.blit(self.text_rend,(0,0))
+        if width and height:
+            self.surface = pygame.Surface((width, height), pygame.SRCALPHA)
 
-    def __call__(self) -> pygame.surface:
-        return self.surface
-    def get_width(self) -> int:
-        return self.text_rect[2]
-    def get_height(self) -> int:
-        return self.text_rect[3]
+        if text:
+            self.text = ecrire(text_color,text,text_taille)
+            if not width and not height:
+                self.surface = pygame.Surface((self.text.get_width()+(marge*2), self.text.get_height()+(marge*2)), pygame.SRCALPHA)        
+                self.surface.fill(ROUGE)
+            self.surface.blit(self.text,(marge,10))
+        if image:            
+            if not width and not height:
+                self.surface = pygame.Surface((image.get_width()+marge*2, image.get_width()+marge*2), pygame.SRCALPHA)
+            self.surface.blit(image,(0,0))
+
+ 
+    def draw(self,
+             surface):
+        surface.blit(self.surface,(self.pos))   
+        
+    def place(self,
+              x,
+              y):
+        w,h = pygame.display.get_surface().get_size()
+        self.pos = x*w,y*h
+
+        
+
 
 
 class setting_bar:
@@ -560,7 +591,7 @@ class setting_bar:
         self.rect = pygame.Rect(0,0,round(0.94*w),round(w/17))
         self.surface = pygame.Surface((self.rect[2], self.rect[3]), pygame.SRCALPHA)
         draw_rounded_rect(self.surface, (50, 50,50), self.rect, rounde)
-        self.surface.blit(self.text(),(self.image.get_width()+w/40,0))
+        self.surface.blit(self.text,(self.image.get_width()+w/40,0))
         self.surface.blit(self.image,(0,0))
 
 
