@@ -4,8 +4,9 @@ from constantes import *
 from fonctions import *
 from time import sleep
 from random import randint
-from typing import *    
+from typing import *
 import platform
+from typing import List
 
 '''
 system = platform.system()
@@ -29,6 +30,7 @@ CADEAUX = pygame.sprite.Group()
 LISTE_GOOMBA = pygame.sprite.Group()
 LISTE_AFFICH = pygame.sprite.Group()
 VIVANT = pygame.sprite.Group()
+liste_bouton = []
 lp = ()
 ma_liste = []
 
@@ -463,13 +465,11 @@ class btn:
                  taille,
                  marge = 2,
                  rounde = 4,
-                 arg = None,
                  initial_color = (200,200,200,200),
                  final_color = (0,115,229,255),
                  effet = None):
         
         self.place = [0,0]
-        self.arg = arg
         self.couleur = BLANC
         self.marge = marge
         self.initial_color = initial_color
@@ -503,9 +503,11 @@ class btn:
         if collide:
             self.is_clic = False
             color = self.final_color
-            if clic == 1:
-                self.is_clic = True
-                self.suite(self.arg)
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        self.is_clic = True
+                        self.suite()
         else:
             color = self.initial_color
         draw_rounded_rect(self.surface, color, self.rect_rect, self.rounde)
@@ -531,15 +533,15 @@ class btn:
 
 class btn2:
     def __init__(self,
-                 command,
-                 text = None,
-                 image = None,
-                 marge = 2,
-                 round = 4,
+                 command = None,
+                 text: str = None,
+                 image:pygame.surface = None,
+                 marge:Union[float,int] = 2,
+                 round:Union[float,int] = 4,
                  initial_color = (200,200,200,200),
                  final_color = (0,115,229,255),
                  text_color = BLANC,
-                 text_taille = 40,
+                 text_taille = 50,
                  width = None,
                  height = None
                  ):
@@ -547,31 +549,87 @@ class btn2:
         if width and height:
             self.surface = pygame.Surface((width, height), pygame.SRCALPHA)
 
+        self.color = initial_color
+        self.initial_color = initial_color
+        self.final_color = final_color
+        self.round = round
+        self.clic = False
+        if command:
+            self.command = command
+
         if text:
             self.text = ecrire(text_color,text,text_taille)
             if not width and not height:
-                self.surface = pygame.Surface((self.text.get_width()+(marge*2), self.text.get_height()+(marge*2)), pygame.SRCALPHA)        
-                self.surface.fill(ROUGE)
-            self.surface.blit(self.text,(marge,10))
+                self.surface = pygame.Surface((self.text.get_width()+self.text.get_height()/marge, self.text.get_height()+self.text.get_height()/marge), pygame.SRCALPHA)   
+                self.rect = self.surface.get_rect()
+            self.surface.blit(self.text,((self.surface.get_width()-self.text.get_width())/2,(self.surface.get_height()-self.text.get_height())/2))
+        
         if image:            
             if not width and not height:
-                self.surface = pygame.Surface((image.get_width()+marge*2, image.get_width()+marge*2), pygame.SRCALPHA)
+                self.surface = pygame.Surface((image.get_width()+image.get_width()/marge, image.get_width()+image.get_width()/marge), pygame.SRCALPHA)   
+                self.rect = self.surface.get_rect()
+                draw_rounded_rect(self.surface, self.color, self.rect, round)     
             self.surface.blit(image,(0,0))
+        self.rect = self.surface.get_rect()
+        liste_bouton.append(self)
 
- 
+        self.surface_fond = pygame.Surface((self.surface.get_width(),self.surface.get_height()), pygame.SRCALPHA)
+
+    def update(self,
+               event):
+        rect = pygame.Rect(self.pos[0],self.pos[1],self.rect[2],self.rect[3])
+        point = pygame.mouse.get_pos()
+        collide = rect.collidepoint(point)
+        self.color = self.initial_color
+        if collide:
+            self.color = self.final_color
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.command()
+        
     def draw(self,
              surface):
-        surface.blit(self.surface,(self.pos))   
+        rect = pygame.Rect(0,0,self.rect[2],self.rect[3])
+        draw_bord(self.surface_fond, self.color, rect, self.surface.get_height()/self.round,2)
+        surface.blit(self.surface_fond,self.pos)
+        surface.blit(self.surface,self.pos)
         
     def place(self,
               x,
               y):
         w,h = pygame.display.get_surface().get_size()
-        self.pos = x*w,y*h
+        self.pos = (x*w,y*h)
 
         
+def update_btn(event):
+    global liste_bouton
+    for object in liste_bouton:
+        object.update(event)
 
-
+def quitt():
+    info = pygame.display.Info()
+    largeur_ecran = info.current_w
+    hauteur_ecran = info.current_h
+    screen = pygame.display.set_mode((largeur_ecran/4,hauteur_ecran/4),pygame.RESIZABLE)
+    pygame.display.set_caption("Avertissement")
+    continuer = True
+    save = btn("Quitter",quitter,40,2,4,(220,0,0,255),(100,0,0,255),None)
+    save2 = btn2(text="Quitter",command=quitter,text_taille=45,initial_color=(220,0,0,255),final_color=(100,0,0,255))
+    save2.place(0.5,0.2)
+    clic = 0
+    while continuer:
+        w,h = pygame.display.get_surface().get_size()
+        for event in pygame.event.get():
+            update_btn(event)
+            if event.type == pygame.QUIT:
+                continuer = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    clic = 1
+        screen.fill((42,42,42))
+        save2.draw(screen)
+        save.draw(screen,(w*0.01,h*0.2),clic)
+        pygame.display.flip()   
 
 class setting_bar:
     def __init__(self,

@@ -7,10 +7,12 @@ from time import sleep
 import pygame_gui
 import json
 
-   
+
 
 
 pygame.init()
+
+quitt()
 
 clic = 0
 
@@ -45,7 +47,7 @@ def import_json(donnees,TUILE_TAILLE):
         if donnees[objet]["type"] == "bouton":
             if donnees[objet]["element"] == "image":
                 origine = pygame.image.load(donnees[objet]['image']).convert_alpha()
-                _bouton = btn(origine,eval(donnees[objet]["suite"]),donnees[objet].get("taille", TUILE_TAILLE),donnees[objet]["marge"],donnees[objet]["round"],arg = donnees[objet]["arg"],initial_color = eval(donnees[objet].get("initial_color", "(200,200,200,40)")),final_color = eval(donnees[objet].get("final_color", "(0,115,229,100)")))
+                _bouton = btn(origine,eval(donnees[objet]["suite"]),donnees[objet].get("taille", TUILE_TAILLE),donnees[objet]["marge"],donnees[objet]["round"],initial_color = eval(donnees[objet].get("initial_color", "(200,200,200,40)")),final_color = eval(donnees[objet].get("final_color", "(0,115,229,100)")))
             elif donnees[objet]["element"] == "text":
                 _bouton = btn(donnees[objet]["text"],eval(donnees[objet]["suite"]),TUILE_TAILLE,donnees[objet]["marge"],donnees[objet]["round"],arg = donnees[objet]["arg"])
             liste_boutons[i] = [_bouton,objet]
@@ -93,8 +95,8 @@ clock = pygame.time.Clock()
 
 save = btn("Sauvegarder",quitter,round(w/1300*50))
 
-save2 = btn2(text="test",command=quitter)
-save2.place(0.5,0.5)
+save2 = btn2(text="test",command=quitter,text_taille=70)
+save2.place(0.5,0.2)
 #bar1 = setting_bar("tuiles/parametres.png","ceci est un exemple de text","sous text",quitter)    
 
 titre = ecrire(BLANC,"Map creator v"+str(v),round(h+w/2/35))
@@ -113,6 +115,7 @@ while continuer:
     ecran.fill(NOIR)
 
     for event in pygame.event.get():
+        update_btn(event)
         if event.type == pygame.QUIT:
             quitter(None)
         if event.type == pygame.VIDEORESIZE:

@@ -1,6 +1,4 @@
 import pygame
-#from tk import messagebox
-import pygame_gui
 import platform
 import datetime
 from math import *
@@ -21,7 +19,10 @@ else:
 
 pygame.init()
 
-
+def draw_bord(surface, color, rect, radius, épaisseur, color_line = (0,0,0)):
+    draw_rounded_rect(surface, color_line, rect, radius)
+    rect2 = pygame.Rect(rect[0]+épaisseur,rect[1]+épaisseur,rect[2]-épaisseur*2,rect[3]-épaisseur*2)
+    draw_rounded_rect(surface, color, rect2, radius)
     
 # Fonction pour dessiner un rectangle avec des coins arrondis
 def draw_rounded_rect(surface, color, rect, radius):
@@ -34,7 +35,9 @@ def draw_rounded_rect(surface, color, rect, radius):
     pygame.draw.circle(surface, color, (x + w - radius, y + h - radius), radius)
 
 
-def quitter(arg):
+
+
+def quitter():
     if system == "Windows":
         import ctypes
         # Définition des constantes de MessageBox
@@ -105,9 +108,11 @@ def ecrire(couleur: Tuple[int,int,int],
            police:str = None
            ) -> pygame.surface:
 
-        font = pygame.font.Font(police, taille)
+        #font = pygame.font.Font(police, taille)
+        font = pygame.font.Font("calibri-font/calibri-regular.ttf", taille)
         text_rend = font.render(text,1,couleur)
         text_rect = text_rend.get_rect()
         surface = pygame.Surface((text_rect[2], text_rect[3]), pygame.SRCALPHA)
         surface.blit(text_rend,(0,0))
         return surface
+
