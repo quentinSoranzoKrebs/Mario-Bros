@@ -8,6 +8,7 @@ from typing import *
 import platform
 from typing import List
 
+
 '''
 system = platform.system()
 
@@ -538,29 +539,39 @@ class btn2:
                  image:pygame.surface = None,
                  marge:Union[float,int] = 2,
                  round:Union[float,int] = 4,
-                 initial_color = (200,200,200,200),
-                 final_color = (0,115,229,255),
-                 text_color = BLANC,
-                 text_taille = 50,
-                 width = None,
-                 height = None
+                 initial_color:Tuple[int,int,int] = (200,200,200,200),
+                 final_color:Tuple[int,int,int] = (0,115,229,255),
+                 text_color:Tuple[int,int,int] = BLANC,
+                 text_taille:int = 50,
+                 width:int = None,
+                 height:int = None,
+                 line_epaisseur:Union[int,float] = 1
                  ):
         
         if width and height:
             self.surface = pygame.Surface((width, height), pygame.SRCALPHA)
 
+        self.id = id(self)
+        print(self.id)
         self.color = initial_color
         self.initial_color = initial_color
         self.final_color = final_color
         self.round = round
         self.clic = False
+        self.line_epaisseur = line_epaisseur
+        self.line_epaisseur_origin = line_epaisseur
+        button = pygame.USEREVENT + 1
+        self.event = pygame.event.Event(button, message="Mon événement personnalisé")
+        self.anchorx = 0
+        self.anchory = 0
+
         if command:
             self.command = command
 
         if text:
             self.text = ecrire(text_color,text,text_taille)
             if not width and not height:
-                self.surface = pygame.Surface((self.text.get_width()+self.text.get_height()/marge, self.text.get_height()+self.text.get_height()/marge), pygame.SRCALPHA)   
+                self.surface = pygame.Surface((self.text.get_width()+self.text.get_height(), self.text.get_height()+self.text.get_height()/marge), pygame.SRCALPHA)   
                 self.rect = self.surface.get_rect()
             self.surface.blit(self.text,((self.surface.get_width()-self.text.get_width())/2,(self.surface.get_height()-self.text.get_height())/2))
         
@@ -577,28 +588,56 @@ class btn2:
 
     def update(self,
                event):
-        rect = pygame.Rect(self.pos[0],self.pos[1],self.rect[2],self.rect[3])
+        w,h = pygame.display.get_surface().get_size()
+        rect = pygame.Rect(self.pos[0]*w-self.anchorx,self.pos[1]*h-self.anchory,self.rect[2],self.rect[3])
         point = pygame.mouse.get_pos()
         collide = rect.collidepoint(point)
         self.color = self.initial_color
+        self.line_epaisseur = self.line_epaisseur_origin
         if collide:
             self.color = self.final_color
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    pygame.event.post(pygame.event.Event(pygame.USEREVENT, {'id': self.id}))
                     self.command()
         
     def draw(self,
              surface):
+        w,h = pygame.display.get_surface().get_size()
         rect = pygame.Rect(0,0,self.rect[2],self.rect[3])
-        draw_bord(self.surface_fond, self.color, rect, self.surface.get_height()/self.round,2)
-        surface.blit(self.surface_fond,self.pos)
-        surface.blit(self.surface,self.pos)
+        draw_bord(self.surface_fond, self.color, rect, self.surface.get_height()/self.round,self.line_epaisseur+1)
+        surface.blit(self.surface_fond,(self.pos[0]*w-self.anchorx,self.pos[1]*h-self.anchory))
+        surface.blit(self.surface,(self.pos[0]*w-self.anchorx,self.pos[1]*h-self.anchory))
         
     def place(self,
               x,
-              y):
+              y,
+              anchor:str = "nw"):
+        if anchor == "nw":
+            self.anchorx = 0
+            self.anchory = 0
+        elif anchor == "n":
+            self.anchorx = self.surface.get_width()/2
+            self.anchory = 0
+        elif anchor == "ne":
+            self.anchorx = self.surface.get_width()
+            self.anchory = 0
+        elif anchor == "center":
+            self.anchorx = self.surface.get_width()/2
+            self.anchory = self.surface.get_height()/2
+        elif anchor == "sw":
+            self.anchorx = 0
+            self.anchory = self.surface.get_height()
+        elif anchor == "s":
+            self.anchorx = self.surface.get_width()/2
+            self.anchory = self.surface.get_height()
+        elif anchor == "se":
+            self.anchorx = self.surface.get_width()
+            self.anchory = self.surface.get_height()
+
+        self.anchorx
         w,h = pygame.display.get_surface().get_size()
-        self.pos = (x*w,y*h)
+        self.pos = (x,y)
 
         
 def update_btn(event):
@@ -610,25 +649,29 @@ def quitt():
     info = pygame.display.Info()
     largeur_ecran = info.current_w
     hauteur_ecran = info.current_h
-    screen = pygame.display.set_mode((largeur_ecran/4,hauteur_ecran/4),pygame.RESIZABLE)
+    screen = pygame.display.set_mode((largeur_ecran/4.8,hauteur_ecran/6.3))
     pygame.display.set_caption("Avertissement")
     continuer = True
-    save = btn("Quitter",quitter,40,2,4,(220,0,0,255),(100,0,0,255),None)
-    save2 = btn2(text="Quitter",command=quitter,text_taille=45,initial_color=(220,0,0,255),final_color=(100,0,0,255))
-    save2.place(0.5,0.2)
-    clic = 0
+    save2 = btn2(text="Quitter",command=quitter,text_taille=23,initial_color=(220,0,0,255),final_color=(220,50,50,255),line_epaisseur=1,round=8)
+    save2.place(0.98,0.95,anchor="se")
+    Annuler = btn2(text="Annuler",command=quitter,text_taille=23,initial_color=(80,80,80,255),final_color=(120,120,120,255),line_epaisseur=1,round=8)
+    Annuler.place(0.60,0.95,anchor="se")
     while continuer:
         w,h = pygame.display.get_surface().get_size()
         for event in pygame.event.get():
             update_btn(event)
             if event.type == pygame.QUIT:
-                continuer = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    clic = 1
+                continuer = False        
+        # Gestion de l'événement personnalisé
+        if event.type == pygame.USEREVENT:
+            if event.dict.get('id') == Annuler.id:
+                print("annulé")
+
+        question = ecrire(BLANC,"Voulez-vous vraiment quitter?",22)
         screen.fill((42,42,42))
+        screen.blit(question,(0.02*w,0.1*h))
         save2.draw(screen)
-        save.draw(screen,(w*0.01,h*0.2),clic)
+        Annuler.draw(screen)
         pygame.display.flip()   
 
 class setting_bar:

@@ -25,7 +25,7 @@ def draw_bord(surface, color, rect, radius, épaisseur, color_line = (0,0,0)):
     draw_rounded_rect(surface, color, rect2, radius)
     
 # Fonction pour dessiner un rectangle avec des coins arrondis
-def draw_rounded_rect(surface, color, rect, radius):
+def draw_rounded_rect(surface, color, rect, radius, bord=None):
     x, y, w, h = rect
     pygame.draw.rect(surface, color, (x + radius, y, w - 2 * radius, h))
     pygame.draw.rect(surface, color, (x, y + radius, w, h - 2 * radius))
@@ -33,7 +33,15 @@ def draw_rounded_rect(surface, color, rect, radius):
     pygame.draw.circle(surface, color, (x + w - radius, y + radius), radius)
     pygame.draw.circle(surface, color, (x + radius, y + h - radius), radius)
     pygame.draw.circle(surface, color, (x + w - radius, y + h - radius), radius)
-
+    if bord:
+        pygame.draw.arc(surface, (0,0,255), (x, y + h - 2 * radius, radius * 2, radius * 2), deg_2_rad(180), deg_2_rad(270), 1)
+        pygame.draw.line(surface, (0,0,255), (x + radius, y + h-1), (x + w - radius, y + h-1),1)
+        pygame.draw.arc(surface, (0,0,255), (x, y, radius * 2, radius * 2), deg_2_rad(90), deg_2_rad(180), 1)
+        pygame.draw.line(surface, (0,0,255), (x + radius, y), (x + w - radius, y),1)
+        pygame.draw.arc(surface, (0,0,255), (w - radius*2 , y, radius * 2, radius * 2), deg_2_rad(0), deg_2_rad(90), 1)
+        pygame.draw.line(surface, (0,0,255), (x + w-1, y + radius), (x + w-1, y + h - radius),1)
+        pygame.draw.arc(surface, (0,0,255), (w - radius*2 , y + h - 2 * radius, radius * 2, radius * 2), deg_2_rad(270), deg_2_rad(360), 1)
+        pygame.draw.line(surface, (0,0,255), (x, y + radius), (x, y + h - radius),1)
 
 
 
@@ -116,3 +124,18 @@ def ecrire(couleur: Tuple[int,int,int],
         surface.blit(text_rend,(0,0))
         return surface
 
+def rgb_to_hex(rgb):
+    """
+    Convertit un tuple RGB en valeur hexadécimale.
+    
+    Args:
+        rgb (tuple): Un tuple de trois nombres entiers représentant les valeurs
+                     rouge, vert et bleu (dans cet ordre).
+    
+    Returns:
+        str: La valeur hexadécimale représentant la couleur.
+    """
+    # Assurez-vous que chaque composante est dans la plage de 0 à 255
+    r, g, b = map(lambda x: min(255, max(0, x)), rgb)
+    # Convertir chaque composante en sa représentation hexadécimale et les concaténer
+    return "#{:02X}{:02X}{:02X}".format(r, g, b)

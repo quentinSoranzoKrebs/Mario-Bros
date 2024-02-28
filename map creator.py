@@ -8,11 +8,8 @@ import pygame_gui
 import json
 
 
-
-
 pygame.init()
 
-quitt()
 
 clic = 0
 
@@ -86,7 +83,6 @@ icone = pygame.image.load("ico_edit.png")
 pygame.display.set_icon(icone)
 
 
-
 background = pygame.Surface(ecran.get_size())
 background.fill(NOIR)
 
@@ -117,7 +113,9 @@ while continuer:
     for event in pygame.event.get():
         update_btn(event)
         if event.type == pygame.QUIT:
-            quitter(None)
+            quitter(None)        
+        if event.type == pygame.USEREVENT:
+            pass
         if event.type == pygame.VIDEORESIZE:
             titre = ecrire(BLANC,"Map creator v"+str(v),round((h+w)/2/20))
             save = btn("Sauvegarder",quitter,round(w/1300*50))

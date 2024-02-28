@@ -317,7 +317,7 @@ while continuer:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            quitter(None)
+            quitter()
         if event.type == pygame.VIDEORESIZE:
             fond = pygame.transform.scale(fond_load, (h/607*3000,h))
             personnag.rect.x = w/2 - personnag.rect[2]/2
