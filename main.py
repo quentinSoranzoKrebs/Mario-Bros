@@ -200,7 +200,6 @@ def custom_sort(item):
 # Trier la liste en utilisant la fonction de tri personnalisée
 lp = sorted(ma_liste, key=custom_sort)
 
-
 for element in lp:
     del element[2]
 

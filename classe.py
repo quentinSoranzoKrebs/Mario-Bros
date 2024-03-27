@@ -645,6 +645,7 @@ def update_btn(event):
     for object in liste_bouton:
         object.update(event)
 
+
 def quitt():
     info = pygame.display.Info()
     largeur_ecran = info.current_w
@@ -674,6 +675,7 @@ def quitt():
         Annuler.draw(screen)
         pygame.display.flip()   
 
+
 class setting_bar:
     def __init__(self,
                  image,
@@ -698,3 +700,5 @@ class setting_bar:
 
     def __call__(self) -> pygame.surface:
         return self.surface
+    
+
